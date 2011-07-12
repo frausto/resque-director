@@ -1,8 +1,14 @@
-= resque-director
+== resque-director
 
-Description goes here.
+Resque Director is a plugin for the Resque queueing system (http://github.com/defunkt/resque) that "directs" workers on a queue by automatically adding or removing workers from a queue based on how backed up a queue becomes, or how long it takes for a job to get pulled off the queue.
 
-== Contributing to resque-director
+==About
+
+resque-director is mainly useful for when you are managing a large number of workers and don't want to waste resources keeping all of them waiting when they are not being used.
+
+== Usage
+
+== Contributing to resque-reconnect
  
 * Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet
 * Check out the issue tracker to make sure someone already hasn't requested it and/or contributed it
