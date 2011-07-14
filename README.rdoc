@@ -1,4 +1,4 @@
-== resque-director
+= Resque Director
 
 Resque Director is a plugin for the Resque queueing system (http://github.com/defunkt/resque) that "directs" workers on a queue by automatically adding or removing workers from a queue based on how backed up a queue becomes, or how long it takes for a job to get pulled off the queue.
 
@@ -7,6 +7,41 @@ Resque Director is a plugin for the Resque queueing system (http://github.com/de
 resque-director is mainly useful for when you are managing a large number of workers and don't want to waste resources keeping all of them waiting when they are not being used.
 
 == Usage
+
+When creating your jobs you should extend Resque::Plugins::Director and add direction options. 
+
+For Example:
+
+  class Job
+  	extend Resque::Plugins::Director
+  	direct :min_workers => 2, :max_workers => 4, :max_time => 60, :max_queue => 10, :wait_time => 30
+
+	@queue = :test
+  	
+	#rest of your Job class here
+  end
+
+=== Configuration Options
+
+<b>min_workers</b>:: specifies the minimum number of workers running at any point in time. If there are no workers running or less than the minimum running it will start as many workers necessary to get it to the minimum. The default is 1.
+
+<b>max_workers</b>:: specifies the maximum number of workers running at any point in time. It will never start more than the maximum number of workers. If anything less than or equal to zero is specified as the maximum it will be treated as if there is no maximum, and theoretically an infinite number of workers could be added. The default is 0.
+
+<b>max_time</b>:: the maximum time in seconds that a job takes to get pulled off the queue, if a job takes longer than this time then a worker is added. If anything less than or equal to zero is specified as the maximum time, this field will be ignored. The default is 0.
+
+<b>max_queue</b>:: the maximum jobs that can build up in a queue, if more than this number of jobs build up then a worker is added. If anything less than or equal to zero is specified as the maximum queue, this field will be ignored. The default is 0.
+
+<b>wait_time</b>:: the time that it will wait after adding or removing a worker before being allowed to add or remove workers again. The default is 60 seconds.
+
+=== Removing Workers
+
+A worker will be removed if the jobs in the queue fall below half of the <b>max_queue</b>, or if the time it takes for a job to be pulled off of a queue falls below half of the <b>max_time</b>.
+
+=== Special Cases
+
+* If a max_worker is less than min_worker then the default for max_worker will be used. 
+* If a min_workers is set less than 1 then it will set it to 0.
+
 
 == Contributing to resque-reconnect
  
