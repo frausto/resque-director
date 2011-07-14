@@ -12,12 +12,12 @@ When creating your jobs you should extend Resque::Plugins::Director and add dire
 
 For Example:
 	
-	class Job
-  	extend Resque::Plugins::Director
-  	direct :min_workers => 2, :max_workers => 4, :max_time => 60, :max_queue => 10, :wait_time => 30
+  class Job
+    extend Resque::Plugins::Director
+    direct :min_workers => 2, :max_workers => 4, :max_time => 60, :max_queue => 10, :wait_time => 30
     @queue = :test
-  	
-	  #rest of your Job class here
+    
+    #rest of your Job class here
   end
   
 
