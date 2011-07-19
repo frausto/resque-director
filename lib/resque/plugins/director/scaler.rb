@@ -6,13 +6,13 @@ module Resque
         
           def scale_up(queue, workers)
             scaling do
-            
+              workers.times { }
             end
           end
         
           def scale_down(queue, workers)
             scaling do
-            
+              workers.times { }
             end
           end
         
@@ -25,7 +25,7 @@ module Resque
           end
          
           def time_to_scale?(wait_time)
-            last_time = Resque.redis.get('last_directed')
+            last_time = Resque.redis.get('last_scaled')
             (Time.now - last_time) > wait_time
           end
         end
