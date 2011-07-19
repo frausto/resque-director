@@ -4,7 +4,7 @@ Resque Director is a plugin for the Resque queueing system (http://github.com/de
 
 ==About
 
-resque-director is mainly useful for when you are managing a large number of workers and don't want to waste resources keeping all of them waiting when they are not being used.
+resque-director is mainly useful for when you are managing a large number of workers and don't want to waste resources keeping all of them waiting when they are not being used. Also useful in queues where the influx of jobs can change dramatically from time to time: enabling more workers during the times when the queue is filling up more quickly, and less in the opposite scenario. Different queues can be given different directions as well.
 
 == Usage
 
@@ -39,8 +39,8 @@ A worker will be removed if the jobs in the queue fall below half of the <b>max_
 
 === Special Cases
 
-* If a max_worker is less than min_worker then the default for max_worker will be used. 
-* If a min_workers is set less than 1 then it will set it to 0.
+* If a max_worker is less than min_worker then the default for max_worker will be used (there will be no maximum). 
+* If a min_workers is set to anything less than 1 then it will be treated as 0.
 
 
 == Contributing to resque-reconnect
