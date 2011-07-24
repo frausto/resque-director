@@ -50,4 +50,27 @@ describe Resque::Plugins::Director do
       Resque.enqueue(TestJob)
     end
   end
+  
+  describe "#before_perform_direct_workers" do
+    before do
+      @worker = Resque::Worker.new(:test)
+      @worker.register_worker
+    end
+    
+    it "should not start workers if max_time is not set" do
+      Resque::Plugins::Director::Scaler.should_not_receive(:scale_up)
+      Resque.enqueue(TestJob)
+      @worker.work(0)
+    end
+    
+    
+    it "should add a worker if the time it takes the job to go through the queue is too long" do
+      TestJob.direct :max_time => 0.1
+      Resque::Plugins::Director::Scaler.should_receive(:scale_up)
+      Resque.enqueue(TestJob)
+      
+      sleep 0.2
+      @worker.work(0)
+    end
+  end
 end

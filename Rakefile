@@ -2,6 +2,8 @@
 
 require 'rubygems'
 require 'bundler'
+require 'resque/tasks'
+
 begin
   Bundler.setup(:default, :development)
 rescue Bundler::BundlerError => e
