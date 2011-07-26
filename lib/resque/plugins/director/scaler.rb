@@ -4,13 +4,13 @@ module Resque
       class Scaler
         class << self
         
-          def scale_up(queue, number_of_workers=1)
+          def scale_up(number_of_workers=1)
             scaling do
-              number_of_workers.times { system("QUEUE=test rake resque:work &") }
+              number_of_workers.times { system("QUEUE=#{Config.queue} rake resque:work &") }
             end
           end
         
-          def scale_down(queue, worker)
+          def scale_down(worker)
             scaling do
               worker.shutdown
             end
@@ -21,12 +21,12 @@ module Resque
           def scaling
             return unless time_to_scale?
             yield
-            Resque.redis.set('last_scaled', Time.now)
+            Resque.redis.set("last_scaled_#{Config.queue}", Time.now)
           end
          
           def time_to_scale?
-            last_time = Resque.redis.get('last_scaled')
-            last_time.nil? || (Time.now - last_time) > Config.wait_time
+            last_time = Resque.redis.get("last_scaled_#{Config.queue}")
+            last_time.nil? || (Time.now - Time.parse(last_time)) > Config.wait_time
           end
         end
       end

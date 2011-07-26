@@ -36,5 +36,8 @@ Resque.redis = 'localhost:9736'
 ENV['VERBOSE'] = 'true'
 
 RSpec.configure do |config|
-  
+  config.before(:each) do
+    Resque::Plugins::Director::Scaler.stub!(:system) 
+    Resque.redis.flushall
+  end
 end

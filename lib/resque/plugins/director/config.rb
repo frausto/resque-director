@@ -4,6 +4,8 @@ module Resque
       module Config
         extend self
         
+        attr_accessor :queue
+        
         DEFAULT_OPTIONS = {
           :min_workers  => 1,
           :max_workers  => 0,
