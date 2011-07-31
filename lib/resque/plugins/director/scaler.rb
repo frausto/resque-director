@@ -12,7 +12,7 @@ module Resque
         
           def scale_down(number_of_workers=1)
             scaling do
-              current_workers[0..number_of_workers].map(&:shutdown)
+              current_workers[0...number_of_workers].map(&:shutdown)
             end
           end
           

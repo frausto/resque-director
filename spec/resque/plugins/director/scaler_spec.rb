@@ -73,16 +73,31 @@ describe Resque::Plugins::Director::Scaler do
   describe "#scale_down" do
     before do
       @worker = Resque::Worker.new(:test)
-      @worker.register_worker
     end
     
-    it "should scale down a worker" do
-      Resque.workers.should == [@worker]
+    it "should scale down a single worker" do
+      worker2 = Resque::Worker.new(:test)
+      Resque.should_receive(:workers).and_return [@worker, worker2]
+      
+      worker2.should_not_receive(:shutdown)
+      @worker.should_receive(:shutdown)
       subject.scale_down
     end
     
     it "should scale down multiple workers" do
+      worker2 = Resque::Worker.new(:test)
+      Resque.should_receive(:workers).and_return [@worker, worker2]
+      [@worker, worker2].each { |w| w.should_receive(:shutdown) }
+      subject.scale_down(2)
+    end
+    
+    it "should not scale down workers on different queues" do
+      worker2 = Resque::Worker.new(:not_test)
+      Resque.should_receive(:workers).and_return [@worker, worker2]
       
+      @worker.should_receive(:shutdown)
+      worker2.should_not_receive(:shutdown)
+      subject.scale_down
     end
   end
   
