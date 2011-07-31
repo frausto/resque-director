@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Resque::Plugins::Director::Config do
   subject { Resque::Plugins::Director::Config }
   
-  describe "#initialize" do  
+  describe "#setup" do  
     it "should set the variables to defaults if none are specified" do
       subject.min_workers.should == 1
       subject.wait_time.should == 60
@@ -23,6 +23,15 @@ describe Resque::Plugins::Director::Config do
       subject.setup(:min_workers => 3, :max_workers => 2)
       subject.min_workers.should == 3
       subject.max_workers.should == 0
+    end
+  end
+  
+  describe "#reset!" do
+    it "should reset the Config" do
+      subject.setup(:min_workers => 3, :wait_time => 30)
+      subject.reset!
+      subject.min_workers.should == 1
+      subject.wait_time.should == 60
     end
   end
 end
