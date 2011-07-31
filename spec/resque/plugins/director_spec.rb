@@ -58,6 +58,13 @@ describe Resque::Plugins::Director do
       
         TestJob.before_perform_direct_workers
       end
+      
+      it "should remove a worker if the queue time is below half the max" do
+        TestJob.direct :max_time => 25
+        
+        Resque::Plugins::Director::Scaler.should_receive(:scale_down)
+        TestJob.before_perform_direct_workers
+      end
     end
     
     describe "with queue length" do
@@ -81,9 +88,18 @@ describe Resque::Plugins::Director do
         Resque::Plugins::Director::Scaler.should_receive(:scale_up)
         TestJob.before_perform_direct_workers
       end
+      
+      it "should remove a worker if the queue length is below half the max" do
+        TestJob.direct :max_queue => 4
+        1.times { Resque.enqueue(TestJob) }
+        
+        Resque::Plugins::Director::Scaler.should_receive(:scale_down)
+        TestJob.before_perform_direct_workers
+      end
     end
     
     describe "with length and time" do
+      
       it "should add worker if only time constraint fails" do
         TestJob.direct :max_time => 5, :max_queue => 2
         Resque.enqueue(TestJob)
@@ -98,7 +114,41 @@ describe Resque::Plugins::Director do
         2.times { Resque.enqueue(TestJob) }
       
         Resque::Plugins::Director::Scaler.should_receive(:scale_up)
+        TestJob.before_perform_direct_workers
+      end
+      
+      it "should not scale down if a worker is being scaled up due to time" do
+        TestJob.direct :max_queue => 4, :max_time => 5
+        1.times { Resque.enqueue(TestJob) }
+
+        Resque::Plugins::Director::Scaler.should_receive(:scale_up)
+        Resque::Plugins::Director::Scaler.should_not_receive(:scale_down)
         TestJob.start_time = Time.now - 10
+        TestJob.before_perform_direct_workers
+      end
+      
+      it "should not scale down if a worker is being scaled up due to queue" do
+        TestJob.direct :max_queue => 1, :max_time => 30
+        2.times { Resque.enqueue(TestJob) }
+
+        Resque::Plugins::Director::Scaler.should_receive(:scale_up)
+        Resque::Plugins::Director::Scaler.should_not_receive(:scale_down)
+        TestJob.before_perform_direct_workers
+      end
+      
+      it "should not scale if only one limit is met" do
+        TestJob.direct :max_queue => 3, :max_time => 15
+        1.times { Resque.enqueue(TestJob) }
+
+        Resque::Plugins::Director::Scaler.should_not_receive(:scale_up)
+        Resque::Plugins::Director::Scaler.should_not_receive(:scale_down)
+        TestJob.start_time = Time.now - 10
+        TestJob.before_perform_direct_workers
+      end
+      
+      it "should not scale if no configuration options are set" do
+        Resque::Plugins::Director::Scaler.should_not_receive(:scale_up)
+        Resque::Plugins::Director::Scaler.should_not_receive(:scale_down)
         TestJob.before_perform_direct_workers
       end
     end
