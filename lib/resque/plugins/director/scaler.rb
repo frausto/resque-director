@@ -39,9 +39,8 @@ module Resque
           end
                     
           def start_command
-            return Config.command_override unless Config.command_override.nil?
-            navigate = Config.run_path ? "cd #{Config.run_path} && " : ""
-            "#{navigate}#{Config.vars} QUEUE=#{Config.queue} #{Config.rake_path} #{Config.environment} resque:work &"
+            default_command = "QUEUE=#{Config.queue} rake environment resque:work &"
+            Config.command_override || default_command
           end
          
           def time_to_scale?

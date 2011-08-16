@@ -12,10 +12,6 @@ module Resque
           :max_time         => 0,
           :max_queue        => 0,
           :wait_time        => 60,
-          :env              => false,
-          :vars             => nil,
-          :rake_path        => "rake",
-          :run_path         => nil,
           :command_override => nil
         }
         
@@ -33,10 +29,6 @@ module Resque
           
           @min_workers = 0 if @min_workers < 0
           @max_workers = DEFAULT_OPTIONS[:max_workers] if @max_workers < @min_workers
-        end
-        
-        def environment
-          @env ? "environment" : ""
         end
         
         reset!

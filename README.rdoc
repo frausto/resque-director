@@ -39,32 +39,18 @@ By default the starting of a worker is accomplished by running
   "QUEUE=queue_name rake resque:work"
 Where "queue_name" is whatever queue the job is running on
 
-However, you can also set command vars that will be used to start a worker 
-For Example:
+However, there is also the option to override the entire command with the system command of your choice using:
 	
   class Job
     extend Resque::Plugins::Director
-    direct :vars => "VERBOSE=1 PIDFILE=pid", :rake_path => "usr/bin/rake", :env => true, :run_path => "/path/to/run/in"
-    @queue = :test
-    
-    #rest of your Job class here
-  end
-
-This would run the command: 
-  "cd /path/to/run/in" && VERBOSE=1 PIDFILE=pid QUEUE=test usr/bin/rake environment resque:work"
-
-There is also the option to override the entire command with that of your choice using:
-	
-  class Job
-    extend Resque::Plugins::Director
-    direct :command_override => "command to run goes here"
+    direct :command_override => "./command_to_run"
     @queue = :test
     
     #rest of your Job class here
   end
 
 
-This will run exactly what you put in the command override to start a worker (ignoring any other command vars you have set), allowing you to customize the starting of a worker fully.
+This will run exactly what you put in the command override as a system command to start a worker, allowing you to customize the starting of a worker fully.
 
 === Removing Workers
 

@@ -13,41 +13,17 @@ describe Resque::Plugins::Director::Scaler do
     end
     
     it "should start a worker on a specific queue" do
-      subject.should_receive(:system).with(" QUEUE=test rake  resque:work &")
+      subject.should_receive(:system).with("QUEUE=test rake environment resque:work &")
       subject.scale_up
     end
     
     it "should start the specified number of workers on a specific queue" do
-      subject.should_receive(:system).twice.with(" QUEUE=test rake  resque:work &")
+      subject.should_receive(:system).twice.with("QUEUE=test rake environment resque:work &")
       subject.scale_up(2)
     end
     
-    it "should start the task with environment" do
-      Resque::Plugins::Director::Config.setup(:env => true)
-      subject.should_receive(:system).with(" QUEUE=test rake environment resque:work &")
-      subject.scale_up
-    end
-    
-    it "should start the vars" do
-      Resque::Plugins::Director::Config.setup(:vars => "PID=/pid")
-      subject.should_receive(:system).with("PID=/pid QUEUE=test rake  resque:work &")
-      subject.scale_up
-    end
-    
-    it "should use the specified rake command" do
-      Resque::Plugins::Director::Config.setup(:rake_path => "/path/to/rake")
-      subject.should_receive(:system).with(" QUEUE=test /path/to/rake  resque:work &")
-      subject.scale_up
-    end
-    
-    it "should navigate to the run_path" do
-      Resque::Plugins::Director::Config.setup(:run_path => "/path/to/go")
-      subject.should_receive(:system).with("cd /path/to/go &&  QUEUE=test rake  resque:work &")
-      subject.scale_up
-    end
-    
     it "should override the entire comand" do
-      Resque::Plugins::Director::Config.setup(:run_path => "/path/to/go", :command_override => "run this")
+      Resque::Plugins::Director::Config.setup(:command_override => "run this")
       subject.should_receive(:system).with("run this")
       subject.scale_up
     end
