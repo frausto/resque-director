@@ -6,7 +6,7 @@ module Resque
         Config.setup(options)
       end
       
-      def after_enqueue_start_workers(*args)
+      def after_enqueue_scale_workers(*args)
         Config.queue = @queue.to_s
         @start_time = Time.now
         

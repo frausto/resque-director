@@ -21,7 +21,7 @@ describe Resque::Plugins::Director do
     Resque::Plugin.lint(Resque::Plugins::Director)
   end
   
-  describe "#after_enqueue_start_workers" do
+  describe "#after_enqueue_scale_workers" do
     it "should scale the workers to within the requirments specified" do
       Resque::Worker.new(:test).register_worker
       Resque::Plugins::Director::Scaler.should_receive(:scale_within_requirements)
