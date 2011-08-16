@@ -22,6 +22,12 @@ describe Resque::Plugins::Director::Scaler do
       subject.scale_up(2)
     end
     
+    it "should not start more workers than the maximum allowed" do
+      Resque::Plugins::Director::Config.setup :max_workers => 1
+      subject.should_receive(:system).once.with("QUEUE=test rake environment resque:work &")
+      subject.scale_up(2)
+    end
+    
     it "should override the entire comand" do
       Resque::Plugins::Director::Config.setup(:command_override => "run this")
       subject.should_receive(:system).with("run this")
@@ -49,6 +55,7 @@ describe Resque::Plugins::Director::Scaler do
   describe "#scale_down" do
     before do
       @worker = Resque::Worker.new(:test)
+      Resque::Plugins::Director::Config.setup :min_workers => 0
     end
     
     it "should scale down a single worker" do
@@ -64,6 +71,16 @@ describe Resque::Plugins::Director::Scaler do
       worker2 = Resque::Worker.new(:test)
       Resque.should_receive(:workers).and_return [@worker, worker2]
       [@worker, worker2].each { |w| w.should_receive(:shutdown) }
+      subject.scale_down(2)
+    end
+    
+    it "should not scale down more than the minimum allowed workers" do
+      Resque::Plugins::Director::Config.setup :min_workers => 1
+      worker2 = Resque::Worker.new(:test)
+      
+      Resque.should_receive(:workers).and_return [@worker, worker2]
+      @worker.should_receive(:shutdown)
+      worker2.should_not_receive(:shutdown)
       subject.scale_down(2)
     end
     
@@ -109,6 +126,15 @@ describe Resque::Plugins::Director::Scaler do
       Resque.should_receive(:workers).and_return(workers)
       
       subject.should_receive(:scale_down).with(1)
+      subject.scale_within_requirements
+    end
+    
+    it "should not scale down if max_workers is zero" do
+      Resque::Plugins::Director::Config.setup :max_workers => 0
+      workers = 1.times.map { Resque::Worker.new(:test) }
+      Resque.should_receive(:workers).and_return(workers)
+      
+      subject.should_not_receive(:scale_down)
       subject.scale_within_requirements
     end
     

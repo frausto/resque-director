@@ -5,34 +5,55 @@ module Resque
         class << self
         
           def scale_up(number_of_workers=1)
-            scaling do
+            if Config.max_workers > 0
+              scale_limit = Config.max_workers - current_workers.size 
+              number_of_workers = scale_limit if number_of_workers > scale_limit 
+            end
+            
+            scaling(number_of_workers) do
               number_of_workers.times { system(start_command) }
             end
           end
         
           def scale_down(number_of_workers=1)
-            scaling do
-              current_workers[0...number_of_workers].map(&:shutdown)
+            workers = current_workers
+            scale_limit = workers.size - Config.min_workers
+            number_of_workers = scale_limit if number_of_workers > scale_limit
+
+            scaling(number_of_workers) do
+              workers[0...number_of_workers].map(&:shutdown)
             end
           end
           
           def scale_within_requirements
             number_working = current_workers.size
-            min_workers = Config.min_workers <= 0 ? 1 : Config.min_workers
-            workers_to_start = min_workers - number_working
-            return scale_up(workers_to_start) if workers_to_start > 0
-
-            workers_to_stop = number_working - Config.max_workers
-            scale_down(workers_to_stop) if workers_to_stop > 0
+            start_number = workers_to_start(number_working)
+            stop_number = workers_to_stop(number_working)
+            
+            if start_number > 0
+              scale_up(start_number)
+            elsif stop_number > 0
+              scale_down(stop_number)
+            end
           end
           
-          def scaling
-            return unless time_to_scale?
+          def scaling(number_of_workers=1)
+            return unless time_to_scale? && number_of_workers > 0
             yield
             Resque.redis.set("last_scaled_#{Config.queue}", Time.now)
           end
         
           private
+          
+          def workers_to_start(number_working)
+            min_workers = Config.min_workers <= 0 ? 1 : Config.min_workers
+            workers_to_start = min_workers - number_working
+          end
+          
+          def workers_to_stop(number_working)
+            return 0 if Config.max_workers <= 0
+            workers_to_stop = number_working - Config.max_workers
+          end
           
           def current_workers
             Resque.workers.select {|w| w.queues == [Config.queue] }
