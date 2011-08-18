@@ -36,7 +36,7 @@ module Resque
           def scaling(number_of_workers=1)
             return unless time_to_scale? && number_of_workers > 0
             yield
-            Resque.redis.set("last_scaled_#{Config.queue}", Time.now)
+            Resque.redis.set("last_scaled_#{Config.queue}", Time.now.utc.to_i)
           end
         
           private
@@ -73,7 +73,7 @@ module Resque
          
           def time_to_scale?
             last_time = Resque.redis.get("last_scaled_#{Config.queue}")
-            last_time.nil? || (Time.now - Time.parse(last_time)) >= Config.wait_time
+            last_time.nil? || (Time.now.utc - Time.at(last_time.to_i).utc) >= Config.wait_time
           end
         end
       end
