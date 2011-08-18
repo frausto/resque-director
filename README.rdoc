@@ -49,8 +49,8 @@ However, there is also the option to override the entire command with the system
     #rest of your Job class here
   end
 
+<b>command_override</b>:: This will run exactly what you put in the command override as a system command to start a worker, allowing you to customize the starting of a worker fully.
 
-This will run exactly what you put in the command override as a system command to start a worker, allowing you to customize the starting of a worker fully.
 
 === Removing Workers
 
