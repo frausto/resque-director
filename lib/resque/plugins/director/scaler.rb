@@ -5,10 +5,7 @@ module Resque
         class << self
         
           def scale_up(number_of_workers=1)
-            if Config.max_workers > 0
-              scale_limit = Config.max_workers - current_workers.size 
-              number_of_workers = scale_limit if number_of_workers > scale_limit 
-            end
+            number_of_workers = workers_to_scale_up(current_workers.size, number_of_workers)
             
             scaling(number_of_workers) do
               number_of_workers.times { system(start_command) }
@@ -17,8 +14,7 @@ module Resque
         
           def scale_down(number_of_workers=1)
             workers = current_workers
-            scale_limit = workers.size - Config.min_workers
-            number_of_workers = scale_limit if number_of_workers > scale_limit
+            number_of_workers = workers_to_scale_down(workers.size, number_of_workers)
 
             scaling(number_of_workers) do
               workers[0...number_of_workers].map(&:shutdown)
@@ -44,6 +40,17 @@ module Resque
           end
         
           private
+          
+          def workers_to_scale_up(number_working, number_to_start)
+            return number_to_start if Config.max_workers <= 0
+            scale_limit = Config.max_workers - current_workers.size 
+            number_to_start > scale_limit ? scale_limit : number_to_start
+          end
+          
+          def workers_to_scale_down(number_working, number_to_stop)
+            scale_limit = number_working - Config.min_workers
+            number_to_stop > scale_limit ? scale_limit : number_to_stop
+          end
           
           def workers_to_start(number_working)
             min_workers = Config.min_workers <= 0 ? 1 : Config.min_workers
