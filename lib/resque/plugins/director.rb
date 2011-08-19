@@ -7,7 +7,7 @@ module Resque
       end
       
       def after_enqueue_scale_workers(*args)
-        Config.queue = @queue.to_s
+        Config.queue ||= @queue.to_s
         @start_time = Time.now
         
         Scaler.scale_within_requirements
@@ -15,6 +15,7 @@ module Resque
       
       def before_perform_direct_workers(*args)
         return unless scaling_config_set?
+        Config.queue ||= @queue.to_s
         
         time_through_queue = Time.now - (@start_time || Time.now)
         jobs_in_queue = Resque.size(@queue.to_s)

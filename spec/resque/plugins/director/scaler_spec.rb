@@ -8,9 +8,6 @@ describe Resque::Plugins::Director::Scaler do
   end
   
   describe "#scale_up" do
-    before do
-      Resque::Plugins::Director::Config.queue = :test
-    end
     
     it "should start a worker on a specific queue" do
       subject.should_receive(:system).with("QUEUE=test rake environment resque:work &")

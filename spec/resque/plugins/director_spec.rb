@@ -39,6 +39,13 @@ describe Resque::Plugins::Director do
       before do
         TestJob.start_time = Time.now - 10
       end
+      
+      it "should set the queue if not set" do
+        TestJob.direct :max_time => 20
+        Resque::Plugins::Director::Config.queue = nil
+        TestJob.before_perform_direct_workers
+        Resque::Plugins::Director::Config.queue.should == "test"
+      end
     
       it "should not start workers if max_time is not set" do
         Resque::Plugins::Director::Scaler.should_not_receive(:scale_up)
