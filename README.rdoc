@@ -35,7 +35,7 @@ For Example:
 
 ===	Starting Workers
 
-By default the starting of a worker is accomplished by running 
+By default the starting of a worker is accomplished by running a system command: 
   "QUEUE=queue_name rake resque:work"
 Where "queue_name" is whatever queue the job is running on
 

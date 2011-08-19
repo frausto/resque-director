@@ -1,8 +1,11 @@
 # encoding: utf-8
+$LOAD_PATH.unshift 'lib'
 
 require 'rubygems'
 require 'bundler'
 require 'resque/tasks'
+
+
 
 begin
   Bundler.setup(:default, :development)

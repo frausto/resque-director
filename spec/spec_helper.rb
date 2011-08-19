@@ -2,7 +2,7 @@ $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 require 'rspec'
 require 'resque'
-Dir["#{File.dirname(__FILE__)}/../lib/**/*.rb"].each {|f| require f}
+require 'resque-director'
 
 # Requires supporting files with custom matchers and macros, etc,
 # in ./support/ and its subdirectories.
@@ -13,7 +13,7 @@ Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {|f| require f}
 #
 if !system("which redis-server")
   puts '', "** can't find `redis-server` in your path"
-  puts "** try running `sudo rake install`"
+  puts "** add redis-server to your PATH and try again"
   abort ''
 end
 

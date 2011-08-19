@@ -25,6 +25,7 @@ Gem::Specification.new do |s|
     "README.rdoc",
     "Rakefile",
     "VERSION",
+    "lib/resque-director.rb",
     "lib/resque/plugins/director.rb",
     "lib/resque/plugins/director/config.rb",
     "lib/resque/plugins/director/scaler.rb",
