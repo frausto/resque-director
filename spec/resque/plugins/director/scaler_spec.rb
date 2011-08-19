@@ -55,19 +55,26 @@ describe Resque::Plugins::Director::Scaler do
       Resque::Plugins::Director::Config.setup :min_workers => 0
     end
     
-    it "should scale down a single worker" do
+    it "should kill worker by sending the QUIT signal to the workers pid" do
+      worker2 = Resque::Worker.new(:test)
+      Resque.should_receive(:workers).and_return [@worker]
+      
+      Process.should_receive(:kill).with("QUIT", @worker.pid)
+      subject.scale_down
+    end
+    
+    it "should scale down a single worker by default" do
       worker2 = Resque::Worker.new(:test)
       Resque.should_receive(:workers).and_return [@worker, worker2]
       
-      worker2.should_not_receive(:shutdown)
-      @worker.should_receive(:shutdown)
+      Process.should_receive(:kill).once
       subject.scale_down
     end
     
     it "should scale down multiple workers" do
       worker2 = Resque::Worker.new(:test)
       Resque.should_receive(:workers).and_return [@worker, worker2]
-      [@worker, worker2].each { |w| w.should_receive(:shutdown) }
+      [@worker, worker2].each { |w| Process.should_receive(:kill).with("QUIT", w.pid) }
       subject.scale_down(2)
     end
     
@@ -76,17 +83,18 @@ describe Resque::Plugins::Director::Scaler do
       worker2 = Resque::Worker.new(:test)
       
       Resque.should_receive(:workers).and_return [@worker, worker2]
-      @worker.should_receive(:shutdown)
-      worker2.should_not_receive(:shutdown)
+      Process.should_not_receive(:kill).once
       subject.scale_down(2)
     end
     
     it "should not scale down workers on different queues" do
       worker2 = Resque::Worker.new(:not_test)
+      @worker.stub(:pid => 1) 
+      worker2.stub(:pid => 2)
       Resque.should_receive(:workers).and_return [@worker, worker2]
       
-      @worker.should_receive(:shutdown)
-      worker2.should_not_receive(:shutdown)
+      Process.should_not_receive(:kill).with("QUIT", worker2.pid)
+      Process.should_receive(:kill).with("QUIT", @worker.pid)
       subject.scale_down
     end
   end

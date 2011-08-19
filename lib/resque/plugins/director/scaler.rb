@@ -17,7 +17,8 @@ module Resque
             number_of_workers = workers_to_scale_down(workers.size, number_of_workers)
 
             scaling(number_of_workers) do
-              workers[0...number_of_workers].map(&:shutdown)
+              worker_pids = workers[0...number_of_workers].map(&:pid)
+              worker_pids.each {|pid| Process.kill("QUIT", pid)}
             end
           end
           
