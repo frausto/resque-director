@@ -15,10 +15,14 @@ module Resque
           def scale_down(number_of_workers=1)
             workers = current_workers
             number_of_workers = workers_to_scale_down(workers.size, number_of_workers)
-
+            
             scaling(number_of_workers) do
-              worker_pids = workers[0...number_of_workers].map(&:pid)
-              worker_pids.each {|pid| Process.kill("QUIT", pid)}
+              if Config.stop_override
+                number_of_workers.times { system(Config.stop_override) }
+              else
+                worker_pids = workers[0...number_of_workers].map(&:pid)
+                worker_pids.each {|pid| Process.kill("QUIT", pid)}
+              end
             end
           end
           
@@ -69,7 +73,7 @@ module Resque
                     
           def start_command
             default_command = "QUEUE=#{Config.queue} rake environment resque:work &"
-            Config.command_override || default_command
+            Config.start_override || default_command
           end
          
           def time_to_scale?

@@ -7,12 +7,13 @@ module Resque
         attr_accessor :queue
         
         DEFAULT_OPTIONS = {
-          :min_workers      => 1,
-          :max_workers      => 0,
-          :max_time         => 0,
-          :max_queue        => 0,
-          :wait_time        => 60,
-          :command_override => nil
+          :min_workers    => 1,
+          :max_workers    => 0,
+          :max_time       => 0,
+          :max_queue      => 0,
+          :wait_time      => 60,
+          :start_override => nil,
+          :stop_override  => nil
         }
         
         def reset!

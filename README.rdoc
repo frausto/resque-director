@@ -6,6 +6,8 @@ Resque Director is a plugin for the Resque queueing system (http://github.com/de
 
 resque-director is mainly useful for when you are managing a large number of workers and don't want to waste resources keeping all of them waiting when they are not being used. Also useful in queues where the influx of jobs can change dramatically from time to time: enabling more workers during the times when the queue is filling up more quickly, and less in the opposite scenario. Different queues can be given different directions as well.
 
+Please note that Resque Director is a very early release, with limitations, and will change over time. At the moment it is strongly not recommended for use in a production environment.
+
 == Usage
 
 When creating your jobs you should extend Resque::Plugins::Director and add direction options. 
@@ -33,26 +35,23 @@ For Example:
 
 <b>wait_time</b>:: the time that it will wait after adding or removing a worker before being allowed to add or remove workers again. The default is 60 seconds.
 
-===	Starting Workers
+== Worker Options
 
-By default the starting of a worker is accomplished by running a system command: 
-  "QUEUE=queue_name rake resque:work"
-Where "queue_name" is whatever queue the job is running on
+<b>start_override</b>:: This will run exactly what you put in the command override as a system command to start A SINGLE worker, allowing you to customize the starting of a worker fully. The system command "QUEUE=queue_name rake resque:work" is run by default, where queue_name is whatever queue the job is running.
 
-However, there is also the option to override the entire command with the system command of your choice using:
-	
+<b>stop_override</b>:: This will run exactly what you put in the command override as a system command to stop A SINGLE worker, allowing you to customize the stoping of a worker fully. Process.kill("QUIT", worker_pid) is used to stop the worker by default, where worker_pid is the PID of a worker.
+
+===	Starting/Stopping Workers Example
+
   class Job
     extend Resque::Plugins::Director
-    direct :command_override => "./command_to_run"
+    direct :start_override => "./start_command_to_run", :stop_override => "./stop_command_to_run"
     @queue = :test
     
     #rest of your Job class here
   end
 
-<b>command_override</b>:: This will run exactly what you put in the command override as a system command to start a worker, allowing you to customize the starting of a worker fully.
-
-
-=== Removing Workers
+=== Conditions For Removing Workers
 
 A worker will be removed if the jobs in the queue fall below half of the <b>max_queue</b>, or if the time it takes for a job to be pulled off of a queue falls below half of the <b>max_time</b>.
 

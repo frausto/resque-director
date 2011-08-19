@@ -26,7 +26,7 @@ describe Resque::Plugins::Director::Scaler do
     end
     
     it "should override the entire comand" do
-      Resque::Plugins::Director::Config.setup(:command_override => "run this")
+      Resque::Plugins::Director::Config.setup(:start_override => "run this")
       subject.should_receive(:system).with("run this")
       subject.scale_up
     end
@@ -56,10 +56,17 @@ describe Resque::Plugins::Director::Scaler do
     end
     
     it "should kill worker by sending the QUIT signal to the workers pid" do
-      worker2 = Resque::Worker.new(:test)
+      Resque.should_receive(:workers).and_return [@worker]
+      Process.should_receive(:kill).with("QUIT", @worker.pid)
+      subject.scale_down
+    end
+    
+    it "should use the stop command to stop a worker if set" do
+      Resque::Plugins::Director::Config.setup :stop_override => "run this", :min_workers => 0
       Resque.should_receive(:workers).and_return [@worker]
       
-      Process.should_receive(:kill).with("QUIT", @worker.pid)
+      subject.should_receive(:system).with("run this")
+      Process.should_not_receive(:kill)
       subject.scale_down
     end
     
