@@ -5,36 +5,28 @@ module Resque
         class << self
         
           def scale_up(number_of_workers=1)
-            number_of_workers = workers_to_scale_up(current_workers.size, number_of_workers)
-            
+            number_of_workers = WorkerTracker.new.total_to_add(number_of_workers)
             scaling(number_of_workers) do
-              number_of_workers.times { system(start_command) }
+              number_of_workers.times { start }
             end
           end
         
           def scale_down(number_of_workers=1)
-            workers = current_workers
-            number_of_workers = workers_to_scale_down(workers.size, number_of_workers)
+            tracker = WorkerTracker.new
+            number_of_workers = tracker.total_to_remove(number_of_workers)
             
             scaling(number_of_workers) do
-              if Config.stop_override
-                number_of_workers.times { system(Config.stop_override) }
-              else
-                worker_pids = workers[0...number_of_workers].map(&:pid)
-                worker_pids.each {|pid| Process.kill("QUIT", pid)}
-              end
+              stop(tracker, number_of_workers)
             end
           end
           
           def scale_within_requirements
-            number_working = current_workers.size
-            start_number = workers_to_start(number_working)
-            stop_number = workers_to_stop(number_working)
+            number_of_workers = WorkerTracker.new.total_for_requirements
             
-            if start_number > 0
-              scale_up(start_number)
-            elsif stop_number > 0
-              scale_down(stop_number)
+            if number_of_workers > 0
+              scale_up(number_of_workers)
+            elsif number_of_workers < 0
+              scale_down(number_of_workers * -1)
             end
           end
           
@@ -45,40 +37,26 @@ module Resque
           end
         
           private
-          
-          def workers_to_scale_up(number_working, number_to_start)
-            return number_to_start if Config.max_workers <= 0
-            scale_limit = Config.max_workers - current_workers.size 
-            number_to_start > scale_limit ? scale_limit : number_to_start
-          end
-          
-          def workers_to_scale_down(number_working, number_to_stop)
-            scale_limit = number_working - Config.min_workers
-            number_to_stop > scale_limit ? scale_limit : number_to_stop
-          end
-          
-          def workers_to_start(number_working)
-            min_workers = Config.min_workers <= 0 ? 1 : Config.min_workers
-            workers_to_start = min_workers - number_working
-          end
-          
-          def workers_to_stop(number_working)
-            return 0 if Config.max_workers <= 0
-            workers_to_stop = number_working - Config.max_workers
-          end
-          
-          def current_workers
-            Resque.workers.select {|w| w.queues == [Config.queue] }
-          end
-                    
-          def start_command
-            default_command = "QUEUE=#{Config.queue} rake environment resque:work &"
-            Config.start_override || default_command
-          end
          
           def time_to_scale?
             last_time = Resque.redis.get("last_scaled_#{Config.queue}")
-            last_time.nil? || (Time.now.utc - Time.at(last_time.to_i).utc) >= Config.wait_time
+            return true if last_time.nil?
+            time_passed = (Time.now.utc - Time.at(last_time.to_i).utc)
+            time_passed >= Config.wait_time
+          end
+          
+          def start
+            default_command = "QUEUE=#{Config.queue} rake environment resque:work &"
+            system(Config.start_override || default_command)
+          end
+          
+          def stop(tracker, number_of_workers)
+            if Config.stop_override
+              number_of_workers.times { system(Config.stop_override) }
+            else
+              worker_pids = tracker.workers[0...number_of_workers].map(&:pid)
+              worker_pids.each {|pid| Process.kill("QUIT", pid)}
+            end
           end
         end
       end

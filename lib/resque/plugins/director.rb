@@ -34,9 +34,9 @@ module Resque
       end
       
       def scale_up?(time_through_queue, jobs_in_queue)
-        time_limits_exceeded =  Config.max_time > 0 && time_through_queue > Config.max_time 
-        queue_limits_exceeded = Config.max_queue > 0 && jobs_in_queue > Config.max_queue
-        time_limits_exceeded || queue_limits_exceeded
+        time_limits =  Config.max_time > 0 && time_through_queue > Config.max_time 
+        queue_limits = Config.max_queue > 0 && jobs_in_queue > Config.max_queue
+        time_limits || queue_limits
       end
       
       def scale_down?(time_through_queue, jobs_in_queue)
