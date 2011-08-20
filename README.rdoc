@@ -10,12 +10,12 @@ Please note that Resque Director is a very early release, with limitations, and 
 
 == Usage
 
-When creating your jobs you should extend Resque::Plugins::Director and add direction options. 
+When creating your jobs you should include (make sure to include not extend) Resque::Plugins::Director and add direction options. 
 
 For Example:
 	
   class Job
-    extend Resque::Plugins::Director
+    include Resque::Plugins::Director
     direct :min_workers => 2, :max_workers => 4, :max_time => 60, :max_queue => 10, :wait_time => 30
     @queue = :test
     
@@ -44,7 +44,7 @@ For Example:
 ===	Starting/Stopping Workers Example
 
   class Job
-    extend Resque::Plugins::Director
+    include Resque::Plugins::Director
     direct :start_override => "./start_command_to_run", :stop_override => "./stop_command_to_run"
     @queue = :test
     

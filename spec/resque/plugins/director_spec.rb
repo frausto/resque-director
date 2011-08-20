@@ -1,17 +1,5 @@
 require 'spec_helper'
 
-class TestJob
-  extend Resque::Plugins::Director
-  @queue = :test
-  
-  def self.start_time=(st)
-    @start_time = st
-  end
-
-  def self.perform
-  end
-end
-
 describe Resque::Plugins::Director do
   before do
     TestJob.direct
@@ -63,40 +51,40 @@ describe Resque::Plugins::Director do
   describe "#before_perform_direct_workers" do
     describe "with time" do
       before do
-        TestJob.start_time = Time.now - 10
+        @start_time = {:resdirecttime => (Time.now - 10).utc.to_i}
       end
       
       it "should set the queue if not set" do
         TestJob.direct :max_time => 20
         Resque::Plugins::Director::Config.queue = nil
-        TestJob.before_perform_direct_workers
+        TestJob.before_perform_direct_workers(@start_time)
         Resque::Plugins::Director::Config.queue.should == "test"
       end
     
       it "should not start workers if max_time is not set" do
         Resque::Plugins::Director::Scaler.should_not_receive(:scale_up)
-        TestJob.before_perform_direct_workers
+        TestJob.before_perform_direct_workers(@start_time)
       end 
     
       it "should not start a worker if the time since it took is less than max_time" do
         TestJob.direct :max_time => 20
       
         Resque::Plugins::Director::Scaler.should_not_receive(:scale_up)
-        TestJob.before_perform_direct_workers
+        TestJob.before_perform_direct_workers(@start_time)
       end
     
       it "should add a worker if the time it takes the job to go through the queue is too long" do
         TestJob.direct :max_time => 5
         Resque::Plugins::Director::Scaler.should_receive(:scale_up)
       
-        TestJob.before_perform_direct_workers
+        TestJob.before_perform_direct_workers(@start_time)
       end
       
       it "should remove a worker if the queue time is below half the max" do
         TestJob.direct :max_time => 25
         
         Resque::Plugins::Director::Scaler.should_receive(:scale_down)
-        TestJob.before_perform_direct_workers
+        TestJob.before_perform_direct_workers(@start_time)
       end
     end
     
@@ -133,13 +121,16 @@ describe Resque::Plugins::Director do
     
     describe "with length and time" do
       
+      before do
+        @start_time = {:resdirecttime => (Time.now - 10).utc.to_i}
+      end
+      
       it "should add worker if only time constraint fails" do
         TestJob.direct :max_time => 5, :max_queue => 2
         Resque.enqueue(TestJob)
         Resque::Plugins::Director::Scaler.should_receive(:scale_up)
       
-        TestJob.start_time = Time.now - 10
-        TestJob.before_perform_direct_workers
+        TestJob.before_perform_direct_workers(@start_time)
       end
       
       it "should add worker if only queue length constraint fails" do
@@ -156,8 +147,7 @@ describe Resque::Plugins::Director do
 
         Resque::Plugins::Director::Scaler.should_receive(:scale_up)
         Resque::Plugins::Director::Scaler.should_not_receive(:scale_down)
-        TestJob.start_time = Time.now - 10
-        TestJob.before_perform_direct_workers
+        TestJob.before_perform_direct_workers(@start_time)
       end
       
       it "should not scale down if a worker is being scaled up due to queue" do
@@ -175,14 +165,35 @@ describe Resque::Plugins::Director do
 
         Resque::Plugins::Director::Scaler.should_not_receive(:scale_up)
         Resque::Plugins::Director::Scaler.should_not_receive(:scale_down)
-        TestJob.start_time = Time.now - 10
-        TestJob.before_perform_direct_workers
+        TestJob.before_perform_direct_workers(@start_time)
       end
       
       it "should not scale if no configuration options are set" do
         Resque::Plugins::Director::Scaler.should_not_receive(:scale_up)
         Resque::Plugins::Director::Scaler.should_not_receive(:scale_down)
         TestJob.before_perform_direct_workers
+      end
+    end
+    
+    describe "crazy meta custom_perform" do      
+      it "should strip out the timestamp from the args before calling the original perform" do
+        TestJob.should_receive(:original_perform).with("arg")
+        TestJob.perform("arg", {:resdirecttime => 1234})
+      end
+      
+      it "should strip out timestamp if it is not a symbol" do
+        TestJob.should_receive(:original_perform).with("arg")
+        TestJob.perform("arg", {'resdirecttime' => 1234})
+      end
+      
+      it "should not strip out any args if timestamp does not exist" do
+        TestJob.should_receive(:original_perform).with("arg", {:test => 123})
+        TestJob.perform("arg", {:test => 123})
+      end
+      
+      it "should  not strip out any args if timestamp does not exist" do
+        TestJob.should_receive(:original_perform).with("arg")
+        TestJob.perform("arg")
       end
     end
   end
