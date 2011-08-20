@@ -82,21 +82,6 @@ describe Resque::Plugins::Director::Scaler do
       Resque::Plugins::Director::Config.setup :min_workers => 0
     end
     
-    it "should kill worker by sending the QUIT signal to the workers pid" do
-      Resque.should_receive(:workers).and_return [@worker]
-      Process.should_receive(:kill).with("QUIT", @worker.pid)
-      subject.scale_down
-    end
-    
-    it "should use the stop command to stop a worker if set" do
-      Resque::Plugins::Director::Config.setup :stop_override => "run this", :min_workers => 0
-      Resque.should_receive(:workers).and_return [@worker]
-      
-      subject.should_receive(:system).with("run this")
-      Process.should_not_receive(:kill)
-      subject.scale_down
-    end
-    
     it "should scale down a single worker by default" do
       worker2 = Resque::Worker.new(:test)
       Resque.should_receive(:workers).and_return [@worker, worker2]
@@ -131,12 +116,69 @@ describe Resque::Plugins::Director::Scaler do
       Process.should_receive(:kill).with("QUIT", @worker.pid)
       subject.scale_down
     end
+  end
+  
+  describe "#stop" do
+    before do
+      @worker = Resque::Worker.new(:test)
+      Resque::Plugins::Director::Config.setup :min_workers => 0
+    end
     
-    it "does not scale down workers already set to be shutdown" do
+    it "should kill worker by sending the QUIT signal to the workers pid" do
+      Resque.should_receive(:workers).and_return [@worker]
+      tracker = Resque::Plugins::Director::WorkerTracker.new
+      
+      Process.should_receive(:kill).with("QUIT", @worker.pid)
+      subject.send(:stop, tracker, 1)
+    end
+    
+    it "should use the stop command to stop a worker if set" do
+      Resque::Plugins::Director::Config.setup :stop_override => "run this", :min_workers => 0
+      Resque.should_receive(:workers).and_return [@worker]
+      tracker = Resque::Plugins::Director::WorkerTracker.new
+      
+      subject.should_receive(:system).with("run this")
+      Process.should_not_receive(:kill)
+      subject.send(:stop, tracker, 1)
+    end
+    
+    it "does not stop workers already set to be shutdown" do
       @worker.should_receive(:shutdown?).and_return(true)
       Resque.should_receive(:workers).and_return [@worker]
+      tracker = Resque::Plugins::Director::WorkerTracker.new
+      
       Process.should_not_receive(:kill).with("QUIT", @worker.pid)
-      subject.scale_down
+      subject.send(:stop, tracker, 1)
+    end
+    
+    it "does not kill worker processes on different machines" do
+      @worker.stub!(:hostname => "different_machine")
+      Resque.should_receive(:workers).and_return [@worker]
+      tracker = Resque::Plugins::Director::WorkerTracker.new
+      
+      Process.should_not_receive(:kill).with("QUIT", @worker.pid)
+      subject.send(:stop, tracker, 1)
+    end
+    
+    it "stops workers on the same host if possible" do
+      @worker.stub!(:hostname => "different_machine")
+      worker2 = Resque::Worker.new(:test)
+      Resque.should_receive(:workers).and_return [@worker, worker2]
+      tracker = Resque::Plugins::Director::WorkerTracker.new
+      
+      Process.should_receive(:kill).with("QUIT", worker2.pid)
+      subject.send(:stop, tracker, 1)
+    end
+    
+    it "ignores hostname if using custom stop script" do
+      Resque::Plugins::Director::Config.setup :stop_override => "run this", :min_workers => 0
+      @worker.stub!(:hostname => "different_machine")
+      Resque.should_receive(:workers).and_return [@worker]
+      tracker = Resque::Plugins::Director::WorkerTracker.new
+      
+      subject.should_receive(:system).with("run this")
+      Process.should_not_receive(:kill)
+      subject.send(:stop, tracker, 1)
     end
   end
   

@@ -39,6 +39,7 @@ RSpec.configure do |config|
   config.before(:each) do
     Resque::Plugins::Director::Config.reset!
     Resque::Plugins::Director::Scaler.stub!(:system) 
+    Process.stub!(:kill)
     Resque.redis.flushall
   end
 end

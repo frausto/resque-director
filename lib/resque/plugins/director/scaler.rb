@@ -60,7 +60,8 @@ module Resque
             if Config.stop_override
               number_of_workers.times { system(Config.stop_override) }
             else
-              worker_pids = tracker.workers[0...number_of_workers].map(&:pid)
+              valid_workers = tracker.workers.select{|w| w.hostname == `hostname`.chomp}
+              worker_pids = valid_workers[0...number_of_workers].map(&:pid)
               worker_pids.each {|pid| Process.kill("QUIT", pid)}
             end
           end
