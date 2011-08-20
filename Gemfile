@@ -1,5 +1,6 @@
 source "http://rubygems.org"
 
+gem "json"
 gem 'resque'
 
 group :development do

@@ -9,18 +9,18 @@ describe Resque::Plugins::Director::Scaler do
   
   describe "#scale_up" do
     it "should start a worker on a specific queue" do
-      subject.should_receive(:system).with("QUEUE=test rake environment resque:work &")
+      subject.should_receive(:system).with("QUEUE=test rake resque:work &")
       subject.scale_up
     end
     
     it "should start the specified number of workers on a specific queue" do
-      subject.should_receive(:system).twice.with("QUEUE=test rake environment resque:work &")
+      subject.should_receive(:system).twice.with("QUEUE=test rake resque:work &")
       subject.scale_up(2)
     end
     
     it "should not start more workers than the maximum allowed" do
       Resque::Plugins::Director::Config.setup :max_workers => 1
-      subject.should_receive(:system).once.with("QUEUE=test rake environment resque:work &")
+      subject.should_receive(:system).once.with("QUEUE=test rake resque:work &")
       subject.scale_up(2)
     end
     
@@ -197,6 +197,12 @@ describe Resque::Plugins::Director::Scaler do
     
     it "should ensure at least one worker is running if min_workers is less than zero" do
       Resque::Plugins::Director::Config.setup :min_workers => -10
+      subject.should_receive(:scale_up).with(1)
+      subject.scale_within_requirements
+    end
+    
+    it "should ensure at least one worker is running if min_workers is zero" do
+      Resque::Plugins::Director::Config.setup :min_workers => 0
       subject.should_receive(:scale_up).with(1)
       subject.scale_within_requirements
     end

@@ -52,7 +52,7 @@ module Resque
           end
           
           def start
-            default_command = "QUEUE=#{Config.queue} rake environment resque:work &"
+            default_command = "QUEUE=#{Config.queue} rake resque:work &"
             system(Config.start_override || default_command)
           end
           
