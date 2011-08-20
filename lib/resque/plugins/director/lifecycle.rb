@@ -10,12 +10,17 @@ module Resque
           end
         end
 
-        module ClassMethods
-
+        module ClassMethods 
           def push(queue, item)
-            if item.respond_to?(:[]=)
-              timestamp = {'resdirecttime' => Time.now.utc.to_i}
-              item[:args] = item[:args].push(timestamp)
+            begin
+              if item.respond_to?(:[]=)
+                job_class =  constantize(item[:class] || item['class'])
+                if job_class && job_class.ancestors.include?(Resque::Plugins::Director)
+                  timestamp = {'resdirecttime' => Time.now.utc.to_i}
+                  item[:args] = item[:args].push(timestamp)
+                end
+              end
+            rescue
             end
             push_without_lifecycle queue, item
           end
