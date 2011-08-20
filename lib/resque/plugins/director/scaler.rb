@@ -20,6 +20,12 @@ module Resque
             end
           end
           
+          def scale_down_to_minimum
+            tracker = WorkerTracker.new
+            number_of_workers = tracker.total_to_go_to_minimum
+            stop(tracker, number_of_workers)
+          end
+          
           def scale_within_requirements
             number_of_workers = WorkerTracker.new.total_for_requirements
             

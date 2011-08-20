@@ -16,6 +16,11 @@ module Resque
           return stop_number if stop_number < 0 
           0
         end
+        
+        def total_to_go_to_minimum
+          to_minimum =  @number_working - Config.min_workers
+          to_minimum > 0 ? to_minimum : 0
+        end
       
         def total_to_add(number_to_start)
           return number_to_start if Config.max_workers <= 0

@@ -34,6 +34,32 @@ describe Resque::Plugins::Director do
     end
   end
   
+  describe "#after_perform_direct_workers" do
+    it "should scale down to the minumum workers if there are no jobs in the queue" do
+      Resque::Plugins::Director::Scaler.should_receive(:scale_down_to_minimum)
+      TestJob.after_perform_direct_workers
+    end
+    
+    it "should not scale down if there are jobs in the queue" do
+      Resque.enqueue(TestJob)
+      Resque::Plugins::Director::Scaler.should_not_receive(:scale_down_to_minimum)
+      TestJob.after_perform_direct_workers
+    end
+  end
+  
+  describe "#on_failure_direct_workers" do
+    it "should scale down to the minumum workers if there are no jobs in the queue" do
+      Resque::Plugins::Director::Scaler.should_receive(:scale_down_to_minimum)
+      TestJob.on_failure_direct_workers
+    end
+    
+    it "should not scale down if there are jobs in the queue" do
+      Resque.enqueue(TestJob)
+      Resque::Plugins::Director::Scaler.should_not_receive(:scale_down_to_minimum)
+      TestJob.on_failure_direct_workers
+    end
+  end
+  
   describe "#before_perform_direct_workers" do
     describe "with time" do
       before do

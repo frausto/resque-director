@@ -8,7 +8,6 @@ describe Resque::Plugins::Director::Scaler do
   end
   
   describe "#scale_up" do
-    
     it "should start a worker on a specific queue" do
       subject.should_receive(:system).with("QUEUE=test rake environment resque:work &")
       subject.scale_up
@@ -38,6 +37,7 @@ describe Resque::Plugins::Director::Scaler do
     end
     
     it "should not scale workers if last time scaled is too soon" do
+      Resque::Plugins::Director::Config.setup(:wait_time => 60)
       2.times { subject.scaling { @times_scaled += 1 } }
       @times_scaled.should == 1
     end
@@ -46,6 +46,33 @@ describe Resque::Plugins::Director::Scaler do
       Resque::Plugins::Director::Config.setup(:wait_time => 0)
       2.times { subject.scaling { @times_scaled += 1 } }
       @times_scaled.should == 2
+    end
+  end
+  
+  describe "#scale_down_to_minimum" do
+    before do
+      @worker = Resque::Worker.new(:test)
+      Resque::Plugins::Director::Config.setup :min_workers => 1
+    end
+    
+    it "should scale workers down to the minimum" do
+      Resque.should_receive(:workers).and_return [@worker, @worker, @worker]
+      Process.should_receive(:kill).twice
+      subject.scale_down_to_minimum
+    end
+    
+    it "should not scale if the workers are already at the minimum" do
+      Resque.should_receive(:workers).and_return [@worker]
+      Process.should_not_receive(:kill)
+      subject.scale_down_to_minimum
+    end
+    
+    it "forces scaling by ignoring wait_time" do
+      Resque::Plugins::Director::Config.setup(:wait_time => 60, :min_workers => 2)
+      subject.scaling {}
+      Resque.should_receive(:workers).and_return [@worker, @worker, @worker]
+      Process.should_receive(:kill)
+      subject.scale_down_to_minimum
     end
   end
   
@@ -162,5 +189,4 @@ describe Resque::Plugins::Director::Scaler do
       subject.scale_within_requirements
     end
   end
-  
 end
