@@ -131,6 +131,13 @@ describe Resque::Plugins::Director::Scaler do
       Process.should_receive(:kill).with("QUIT", @worker.pid)
       subject.scale_down
     end
+    
+    it "does not scale down workers already set to be shutdown" do
+      @worker.should_receive(:shutdown?).and_return(true)
+      Resque.should_receive(:workers).and_return [@worker]
+      Process.should_not_receive(:kill).with("QUIT", @worker.pid)
+      subject.scale_down
+    end
   end
   
   describe "#scale_within_requirements" do

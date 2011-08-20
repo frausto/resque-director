@@ -46,7 +46,9 @@ module Resque
         end
         
         def current_workers
-          Resque.workers.select {|w| w.queues == [Config.queue] }
+          Resque.workers.select do |w|
+            w.queues == [Config.queue] && !w.shutdown?
+          end
         end
       end
     end

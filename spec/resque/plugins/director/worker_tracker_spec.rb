@@ -110,4 +110,24 @@ describe Resque::Plugins::Director::WorkerTracker do
       subject.new.total_to_go_to_minimum.should == 0
     end
   end
+  
+  describe "#initialize" do
+    it "sets the workers from the queue" do
+      Resque.should_receive(:workers).and_return [@worker, @worker, @worker]
+      subject.new.workers.should == [@worker, @worker, @worker]
+    end
+    
+    it "does not set workers from different queues" do
+      other_worker = Resque::Worker.new(:other)
+      Resque.should_receive(:workers).and_return [@worker, other_worker, @worker]
+      subject.new.workers.should == [@worker, @worker]
+    end
+    
+    it "does not set workers that are scheduled for shutdow" do
+      shutdown_worker = Resque::Worker.new(:test)
+      shutdown_worker.shutdown
+      Resque.should_receive(:workers).and_return [shutdown_worker, @worker, @worker]
+      subject.new.workers.should == [@worker, @worker]
+    end
+  end
 end
