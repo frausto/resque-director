@@ -53,7 +53,7 @@ For Example:
 
 === Conditions For Removing Workers
 
-A worker will be removed if the jobs in the queue fall below half of the <b>max_queue</b>, or if the time it takes for a job to be pulled off of a queue falls below half of the <b>max_time</b>.
+A worker will be removed if the jobs in the queue fall below half of the <b>max_queue</b>, or if the time it takes for a job to be pulled off of a queue falls below half of the <b>max_time</b>. Workers will be scaled down to the minimum if there are no jobs on the queue.
 
 === Special Cases
 
