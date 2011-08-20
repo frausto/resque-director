@@ -28,18 +28,22 @@ describe Resque::Plugins::Director::WorkerTracker do
   end
   
   describe "#total_to_remove" do
-    before do
-      Resque.should_receive(:workers).and_return [@worker, @worker]
-    end
-    
     it "should limit the workers to be removed to not go below minimum allowed workers" do
+      Resque.should_receive(:workers).and_return [@worker, @worker]
       Resque::Plugins::Director::Config.setup :min_workers => 1
       subject.new.total_to_remove(2).should == 1
     end
   
-    it "should allow the workers to be removed if it stays above the minimum" do
+    it "always keeps at least one worker" do
+      Resque.should_receive(:workers).and_return [@worker, @worker, @worker]
       Resque::Plugins::Director::Config.setup :min_workers => 0
       subject.new.total_to_remove(2).should == 2
+    end
+    
+    it "should return zero if there is only one worker working" do
+      Resque.should_receive(:workers).and_return [@worker]
+      Resque::Plugins::Director::Config.setup :min_workers => 0
+      subject.new.total_to_remove(1).should == 0
     end
   end
 

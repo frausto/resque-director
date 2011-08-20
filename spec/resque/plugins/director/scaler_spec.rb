@@ -92,17 +92,16 @@ describe Resque::Plugins::Director::Scaler do
     
     it "should scale down multiple workers" do
       worker2 = Resque::Worker.new(:test)
-      Resque.should_receive(:workers).and_return [@worker, worker2]
+      Resque.should_receive(:workers).and_return [@worker, @worker, worker2]
       [@worker, worker2].each { |w| Process.should_receive(:kill).with("QUIT", w.pid) }
       subject.scale_down(2)
     end
     
     it "should not scale down more than the minimum allowed workers" do
       Resque::Plugins::Director::Config.setup :min_workers => 1
-      worker2 = Resque::Worker.new(:test)
       
-      Resque.should_receive(:workers).and_return [@worker, worker2]
-      Process.should_not_receive(:kill).once
+      Resque.should_receive(:workers).and_return [@worker, @worker]
+      Process.should_receive(:kill).once
       subject.scale_down(2)
     end
     
@@ -110,7 +109,7 @@ describe Resque::Plugins::Director::Scaler do
       worker2 = Resque::Worker.new(:not_test)
       @worker.stub(:pid => 1) 
       worker2.stub(:pid => 2)
-      Resque.should_receive(:workers).and_return [@worker, worker2]
+      Resque.should_receive(:workers).and_return [@worker, @worker, worker2]
       
       Process.should_not_receive(:kill).with("QUIT", worker2.pid)
       Process.should_receive(:kill).with("QUIT", @worker.pid)

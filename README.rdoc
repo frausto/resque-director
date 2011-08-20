@@ -6,8 +6,6 @@ Resque Director is a plugin for the Resque queueing system (http://github.com/de
 
 resque-director is mainly useful for when you are managing a large number of workers and don't want to waste resources keeping all of them waiting when they are not being used. Also useful in queues where the influx of jobs can change dramatically from time to time: enabling more workers during the times when the queue is filling up more quickly, and less in the opposite scenario. Different queues can be given different directions as well.
 
-Please note that Resque Director is a very early release, with limitations, and will change over time. At the moment it is strongly not recommended for use in a production environment.
-
 == Usage
 
 When creating your jobs you should include (make sure to include not extend) Resque::Plugins::Director and add direction options. 

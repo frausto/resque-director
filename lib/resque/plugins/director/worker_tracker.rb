@@ -29,7 +29,8 @@ module Resque
         end
         
         def total_to_remove(number_to_stop)
-          scale_limit = @number_working - Config.min_workers
+          min_workers = Config.min_workers <= 0 ? 1 : Config.min_workers
+          scale_limit = @number_working - min_workers
           number_to_stop > scale_limit ? scale_limit : number_to_stop
         end
         
