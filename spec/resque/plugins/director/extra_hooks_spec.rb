@@ -13,7 +13,7 @@ describe Resque::Plugins::Director::ExtraHooks do
   describe "#push" do
     it "should add the start timestamp to the end of the job" do
       Resque.enqueue(TestJob, "arg1")
-      Resque.redis.lindex("queue:test",0).should =~ /^\{.*\"start_time\":#{@timestamp}/
+      Resque.redis.lindex("queue:test",0).should =~ /^\{.*\"created_at\":#{@timestamp}/
     end
   end
   
@@ -22,7 +22,7 @@ describe Resque::Plugins::Director::ExtraHooks do
       Resque.enqueue(TestJob, "arg1")
       expected_time = Time.at(@timestamp).utc
       TestJob.should_receive(:after_pop_direct_workers).with(expected_time)
-      Resque.pop("test").should == {"args"=>["arg1"], "class"=>"TestJob", "start_time"=>@timestamp}
+      Resque.pop("test").should == {"args"=>["arg1"], "class"=>"TestJob", "created_at"=>@timestamp}
     end
     
     it "should direct workers with current time if no start time" do

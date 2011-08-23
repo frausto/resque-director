@@ -13,14 +13,14 @@ module Resque
 
         module ClassMethods 
           def push(queue, item)
-            item[:start_time] = Time.now.utc.to_i if item.respond_to?(:[]=)
+            item[:created_at] = Time.now.utc.to_i if item.respond_to?(:[]=)
             original_push queue, item
           end
           
           def pop(queue)
             job = original_pop(queue)
             begin 
-              timestamp = job['start_time']
+              timestamp = job['created_at']
               start_time = timestamp.nil? ? Time.now.utc : Time.at(timestamp.to_i).utc
               job_class = constantize(job['class'])
               if job_class && job_class.respond_to?(:after_pop_direct_workers) && job_class.respond_to?(:direct)
