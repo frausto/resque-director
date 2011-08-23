@@ -13,7 +13,9 @@ module Resque
           :max_queue      => 0,
           :wait_time      => 60,
           :start_override => nil,
-          :stop_override  => nil
+          :stop_override  => nil,
+          :logger         => nil,
+          :log_level      => :warn
         }
         
         def reset!
@@ -21,6 +23,10 @@ module Resque
             attr_reader key
             self.instance_variable_set("@#{key.to_s}", default)
           end
+        end
+        
+        def log(message)
+          @logger.send(@log_level, "DIRECTORS LOG: #{message}") if @logger
         end
 
         def setup(options={})

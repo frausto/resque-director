@@ -52,11 +52,13 @@ module Resque
           end
           
           def start
+            Config.log("starting 1 worker on queue #{Config.queue}")
             default_command = "QUEUE=#{Config.queue} rake resque:work &"
             system(Config.start_override || default_command)
           end
           
           def stop(tracker, number_of_workers)
+            Config.log("stopping #{number_of_workers} workers on #{Config.queue}")
             if Config.stop_override
               number_of_workers.times { system(Config.stop_override) }
             else

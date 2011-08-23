@@ -25,12 +25,16 @@ module Resque
         def total_to_add(number_to_start)
           return number_to_start if Config.max_workers <= 0
           scale_limit = Config.max_workers - @number_working
+          Config.log("WORKER MAX REACHED: wanted to start #{number_to_start} worker(s) on #{Config.queue}") if scale_limit <= 0
           number_to_start > scale_limit ? scale_limit : number_to_start
         end
         
         def total_to_remove(number_to_stop)
           min_workers = Config.min_workers <= 0 ? 1 : Config.min_workers
           scale_limit = @number_working - min_workers
+          if scale_limit <= 0 && Config.min_workers > 0
+            Config.log("WORKER MIN REACHED: wanted to stop #{number_to_stop} worker(s) on #{Config.queue}")
+          end
           number_to_stop > scale_limit ? scale_limit : number_to_stop
         end
         

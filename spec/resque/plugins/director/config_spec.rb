@@ -34,4 +34,20 @@ describe Resque::Plugins::Director::Config do
       subject.wait_time.should == 60
     end
   end
+  
+  describe "log" do
+    it "logs message to a logger using given log level if specified" do
+      log = mock('Logger')
+      subject.setup(:logger => log, :log_level => :info)
+      log.should_receive(:info).with("DIRECTORS LOG: test message")
+      subject.log("test message")
+    end
+    
+    it "defaults log level to warn" do
+      log = mock('Logger')
+      subject.setup(:logger => log)
+      log.should_receive(:warn).with("DIRECTORS LOG: test message")
+      subject.log("test message")
+    end
+  end
 end

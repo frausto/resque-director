@@ -6,6 +6,8 @@ Resque Director is a plugin for the Resque queueing system (http://github.com/de
 
 resque-director is mainly useful for when you are managing a large number of workers and don't want to waste resources keeping all of them waiting when they are not being used. Also useful in queues where the influx of jobs can change dramatically from time to time: enabling more workers during the times when the queue is filling up more quickly, and less in the opposite scenario. Different queues can be given different directions as well.
 
+resque-director does not operate on workers that serve multiple queues, and does not include those workers in any scaling calculations.
+
 == Usage
 
 When creating your jobs you should include (make sure to include not extend) Resque::Plugins::Director and add direction options. 
@@ -33,7 +35,7 @@ For Example:
 
 <b>wait_time</b>:: the time that it will wait after adding or removing a worker before being allowed to add or remove workers again. The default is 60 seconds.
 
-== Worker Options
+=== Worker Options
 
 <b>start_override</b>:: This will run exactly what you put in the command override as a system command to start A SINGLE worker, allowing you to customize the starting of a worker fully. The system command "QUEUE=queue_name rake resque:work" is run by default, where queue_name is whatever queue the job is running.
 
@@ -52,6 +54,16 @@ For Example:
 === Conditions For Removing Workers
 
 A worker will be removed if the jobs in the queue fall below half of the <b>max_queue</b>, or if the time it takes for a job to be pulled off of a queue falls below half of the <b>max_time</b>. Workers will be scaled down to the minimum if there are no jobs on the queue.
+
+=== Logging
+
+To add director logging you can pass a logger as an option. It will prepend all log messages with "DIRECTORS LOG:" and will log when scaling up or down a worker. It will also log when a worker wants to scale up or down but is unable to do so due to the fact that the maximum or minimum number of workers has been reached for that queue. 
+
+=== Logger Options 
+
+<b>logger</b>:: This will set the logger that will be used. It takes a Logger from the Ruby Standard Library. If this is not set the director will not write to any logs.
+
+<b>log_level</b>:: This sets the level to log at as a symbol. The default level is :warn.
 
 === Special Cases
 
