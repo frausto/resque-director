@@ -1,7 +1,6 @@
 source "http://rubygems.org"
 
-gem "json"
-gem 'resque'
+gem 'resque', "~> 1.14.0"
 
 group :development do
   gem "rspec", "~> 2.3.0"
