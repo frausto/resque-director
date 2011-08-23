@@ -1,5 +1,5 @@
 class TestJob
-  include Resque::Plugins::Director
+  extend Resque::Plugins::Director
   @queue = :test
 
   def self.perform
