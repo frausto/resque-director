@@ -64,7 +64,9 @@ module Resque
             else
               valid_workers = tracker.workers.select{|w| w.hostname == `hostname`.chomp}
               worker_pids = valid_workers[0...number_of_workers].map(&:pid)
-              worker_pids.each {|pid| Process.kill("QUIT", pid)}
+              worker_pids.each do |pid| 
+                Process.kill("QUIT", pid) rescue nil
+              end
             end
           end
         end

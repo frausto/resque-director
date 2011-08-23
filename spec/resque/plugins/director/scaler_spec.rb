@@ -83,17 +83,15 @@ describe Resque::Plugins::Director::Scaler do
     end
     
     it "should scale down a single worker by default" do
-      worker2 = Resque::Worker.new(:test)
-      Resque.should_receive(:workers).and_return [@worker, worker2]
+      Resque.should_receive(:workers).and_return [@worker, @worker]
       
       Process.should_receive(:kill).once
       subject.scale_down
     end
     
     it "should scale down multiple workers" do
-      worker2 = Resque::Worker.new(:test)
-      Resque.should_receive(:workers).and_return [@worker, @worker, worker2]
-      [@worker, worker2].each { |w| Process.should_receive(:kill).with("QUIT", w.pid) }
+      Resque.should_receive(:workers).and_return [@worker, @worker, @worker]
+      Process.should_receive(:kill).with("QUIT", @worker.pid)
       subject.scale_down(2)
     end
     
@@ -105,11 +103,17 @@ describe Resque::Plugins::Director::Scaler do
       subject.scale_down(2)
     end
     
+    it "should not throw exceptions when process throws exception" do
+      Resque.should_receive(:workers).and_return [@worker, @worker]
+      Process.should_receive(:kill).and_throw(:Exception)
+      lambda { subject.scale_down }.should_not raise_error
+    end
+    
     it "should not scale down workers on different queues" do
       worker2 = Resque::Worker.new(:not_test)
       @worker.stub(:pid => 1) 
       worker2.stub(:pid => 2)
-      Resque.should_receive(:workers).and_return [@worker, @worker, worker2]
+      Resque.should_receive(:workers).and_return [worker2, @worker, @worker, worker2]
       
       Process.should_not_receive(:kill).with("QUIT", worker2.pid)
       Process.should_receive(:kill).with("QUIT", @worker.pid)
