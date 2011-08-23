@@ -7,7 +7,7 @@ module Resque
           def scale_up(number_of_workers=1)
             number_of_workers = WorkerTracker.new.total_to_add(number_of_workers)
             scaling(number_of_workers) do
-              number_of_workers.times { start }
+              start(number_of_workers)
             end
           end
         
@@ -51,10 +51,10 @@ module Resque
             time_passed >= Config.wait_time
           end
           
-          def start
-            Config.log("starting 1 worker on queue #{Config.queue}")
+          def start(number_of_workers)
+            Config.log("starting #{number_of_workers} workers on queue #{Config.queue}")
             default_command = "QUEUE=#{Config.queue} rake resque:work &"
-            system(Config.start_override || default_command)
+            number_of_workers.times { system(Config.start_override || default_command) }
           end
           
           def stop(tracker, number_of_workers)

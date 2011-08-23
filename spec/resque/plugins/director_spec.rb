@@ -120,7 +120,6 @@ describe Resque::Plugins::Director do
     end
     
     describe "with length and time" do
-      
       before do
         @start_time = {:resdirecttime => (Time.now - 10).utc.to_i}
       end
