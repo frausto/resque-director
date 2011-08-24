@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{resque-director}
-  s.version = "1.1.0"
+  s.version = "2.0.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = [%q{Nolan Frausto}]
-  s.date = %q{2011-08-23}
+  s.date = %q{2011-08-24}
   s.description = %q{resque plugin for dynamically adding/removing workers to a queue}
   s.email = %q{nrfrausto@gmail.com}
   s.extra_rdoc_files = [
@@ -27,18 +27,18 @@ Gem::Specification.new do |s|
     "lib/resque-director.rb",
     "lib/resque/plugins/director.rb",
     "lib/resque/plugins/director/config.rb",
-    "lib/resque/plugins/director/lifecycle.rb",
+    "lib/resque/plugins/director/extra_hooks.rb",
     "lib/resque/plugins/director/scaler.rb",
     "lib/resque/plugins/director/worker_tracker.rb",
     "resque-director.gemspec",
     "spec/redis-test.conf",
     "spec/resque/plugins/director/config_spec.rb",
-    "spec/resque/plugins/director/lifecycle_spec.rb",
+    "spec/resque/plugins/director/extra_hooks_spec.rb",
     "spec/resque/plugins/director/scaler_spec.rb",
     "spec/resque/plugins/director/worker_tracker_spec.rb",
     "spec/resque/plugins/director_spec.rb",
     "spec/spec_helper.rb",
-    "spec/support/test_job.rb"
+    "spec/support/jobs.rb"
   ]
   s.homepage = %q{http://github.com/frausto/resque-director}
   s.licenses = [%q{MIT}]
