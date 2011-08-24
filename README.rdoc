@@ -37,15 +37,18 @@ For Example:
 
 === Worker Options
 
-<b>start_override</b>:: This will run exactly what you put in the command override as a system command to start A SINGLE worker, allowing you to customize the starting of a worker fully. The system command "QUEUE=queue_name rake resque:work" is run by default, where queue_name is whatever queue the job is running.
+<b>start_override</b>:: This option takes a lambda closure that accepts the queue as an argument, the block you pass in will be responsible for starting a SINGLE worker allowing you to fully customize the starting of a worker. By default the system command "QUEUE=queue_name rake resque:work &" is run, where queue_name is whatever queue the job is running.
 
-<b>stop_override</b>:: This will run exactly what you put in the command override as a system command to stop A SINGLE worker, allowing you to customize the stoping of a worker fully. Process.kill("QUIT", worker_pid) is used to stop the worker by default, where worker_pid is the PID of a worker.
+<b>stop_override</b>:: This option takes a lambda closure that accepts the queue as an argument, the block you pass in will be responsible for stopping a SINGLE worker allowing you to fully customize the stopping of a worker. Process.kill("QUIT", worker_pid) is used to stop the worker by default, where worker_pid is the process id of a worker.
 
 ===	Starting/Stopping Workers Example
 
   class Job
     extend Resque::Plugins::Director
-    direct :start_override => "./start_command_to_run", :stop_override => "./stop_command_to_run"
+
+	start_block = lambda{|queue| system("start_#{queue}")}
+	stop_block = lambda{|queue| system("stop_#{queue}")}
+    direct :start_override => start_block, :stop_override => stop_block
     @queue = :test
     
     #rest of your Job class here

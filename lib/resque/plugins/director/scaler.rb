@@ -53,14 +53,17 @@ module Resque
           
           def start(number_of_workers)
             Config.log("starting #{number_of_workers} workers on queue:#{Config.queue}") if number_of_workers > 0
-            default_command = "QUEUE=#{Config.queue} rake resque:work &"
-            number_of_workers.times { system(Config.start_override || default_command) }
+            if Config.start_override
+              number_of_workers.times { Config.start_override.call(Config.queue) }
+            else
+              number_of_workers.times { system("QUEUE=#{Config.queue} rake resque:work &") }
+            end
           end
           
           def stop(tracker, number_of_workers)
             Config.log("stopping #{number_of_workers} workers on queue:#{Config.queue}") if number_of_workers > 0
             if Config.stop_override
-              number_of_workers.times { system(Config.stop_override) }
+              number_of_workers.times {Config.stop_override.call(Config.queue) }
             else
               valid_workers = tracker.workers.select{|w| w.hostname == `hostname`.chomp}
               worker_pids = valid_workers[0...number_of_workers].map(&:pid)

@@ -25,8 +25,9 @@ describe Resque::Plugins::Director::Scaler do
     end
     
     it "should override the entire comand" do
-      Resque::Plugins::Director::Config.setup(:start_override => "run this")
-      subject.should_receive(:system).with("run this")
+      test_block = lambda {|queue| }
+      Resque::Plugins::Director::Config.setup :start_override => test_block
+      test_block.should_receive(:call).with("test")
       subject.scale_up
     end
   end
@@ -135,12 +136,14 @@ describe Resque::Plugins::Director::Scaler do
       subject.send(:stop, tracker, 1)
     end
     
-    it "should use the stop command to stop a worker if set" do
-      Resque::Plugins::Director::Config.setup :stop_override => "run this", :min_workers => 0
+    it "should use the stop block to stop a worker if set" do
+      test_block = lambda {|queue| }
+      Resque::Plugins::Director::Config.setup :stop_override => test_block, :min_workers => 0
+      
       Resque.should_receive(:workers).and_return [@worker]
       tracker = Resque::Plugins::Director::WorkerTracker.new
       
-      subject.should_receive(:system).with("run this")
+      test_block.should_receive(:call).with("test")
       Process.should_not_receive(:kill)
       subject.send(:stop, tracker, 1)
     end
@@ -174,12 +177,14 @@ describe Resque::Plugins::Director::Scaler do
     end
     
     it "ignores hostname if using custom stop script" do
-      Resque::Plugins::Director::Config.setup :stop_override => "run this", :min_workers => 0
+      test_block = lambda {|queue| }
+      Resque::Plugins::Director::Config.setup :stop_override => test_block, :min_workers => 0
+      
       @worker.stub!(:hostname => "different_machine")
       Resque.should_receive(:workers).and_return [@worker]
       tracker = Resque::Plugins::Director::WorkerTracker.new
       
-      subject.should_receive(:system).with("run this")
+      test_block.should_receive(:call).with("test")
       Process.should_not_receive(:kill)
       subject.send(:stop, tracker, 1)
     end
