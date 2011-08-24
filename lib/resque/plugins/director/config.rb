@@ -15,7 +15,7 @@ module Resque
           :start_override => nil,
           :stop_override  => nil,
           :logger         => nil,
-          :log_level      => :warn
+          :log_level      => :debug
         }
         
         def reset!

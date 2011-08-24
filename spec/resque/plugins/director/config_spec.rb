@@ -43,10 +43,10 @@ describe Resque::Plugins::Director::Config do
       subject.log("test message")
     end
     
-    it "defaults log level to warn" do
+    it "defaults log level to debug" do
       log = mock('Logger')
       subject.setup(:logger => log)
-      log.should_receive(:warn).with("DIRECTORS LOG: test message")
+      log.should_receive(:debug).with("DIRECTORS LOG: test message")
       subject.log("test message")
     end
   end

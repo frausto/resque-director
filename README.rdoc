@@ -62,11 +62,23 @@ A worker will be removed if the jobs in the queue fall below half of the <b>max_
 
 To add director logging you can pass a logger as an option. It will prepend all log messages with "DIRECTORS LOG:" and will log when scaling up or down a worker. It will also log when a worker wants to scale up or down but is unable to do so due to the fact that the maximum or minimum number of workers has been reached for that queue. 
 
+===	Logging Example
+
+  class Job
+    logger = Logger.new('logfile.log')
+    extend Resque::Plugins::Director
+
+    direct :logger => logger, :log_level => :info
+    @queue = :test
+    
+    #rest of your Job class here
+  end
+
 === Logger Options 
 
 <b>logger</b>:: This will set the logger that will be used. It takes a Logger from the Ruby Standard Library. If this is not set the director will not write to any logs.
 
-<b>log_level</b>:: This sets the level to log at as a symbol. The default level is :warn.
+<b>log_level</b>:: This sets the level to log at as a symbol. The default level is :debug.
 
 === Special Cases
 
@@ -79,7 +91,7 @@ To add director logging you can pass a logger as an option. It will prepend all 
 * resque-director may be incompatible with gems that modify resque's push/pop functionality. 
 
 
-== Contributing to resque-reconnect
+== Contributing to resque-director
  
 * Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet
 * Check out the issue tracker to make sure someone already hasn't requested it and/or contributed it
