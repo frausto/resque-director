@@ -1,7 +1,7 @@
 require 'spec_helper'
 
-describe Resque::Plugins::Director::ExtraHooks do
-  subject { Resque::Plugins::Director::ExtraHooks }
+describe Resque::Plugins::Director::PushPop do
+  subject { Resque::Plugins::Director::PushPop }
   
   before do
     Resque::Plugins::Director::Config.queue = "test"

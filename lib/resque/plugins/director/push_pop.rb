@@ -1,9 +1,9 @@
 module Resque
   module Plugins
     module Director
-      module ExtraHooks
+      module PushPop
 
-        def self.included(base) #:nodoc:
+        def self.included(base)
           base.class_eval do
             alias_method :original_pop, :pop
             alias_method :original_push, :push
@@ -37,5 +37,5 @@ module Resque
 end
 
 module Resque
-  include Resque::Plugins::Director::ExtraHooks
+  include Resque::Plugins::Director::PushPop
 end
