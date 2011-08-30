@@ -46,8 +46,8 @@ For Example:
   class Job
     extend Resque::Plugins::Director
 
-    start_block = lambda{|queue| system("start_#{queue}")}
-    stop_block = lambda{|queue| system("stop_#{queue}")}
+    start_block = lambda{|queue| ... }
+    stop_block = lambda{|queue| ... }
     direct :start_override => start_block, :stop_override => stop_block
     @queue = :test
     
