@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = [%q{Nolan Frausto}]
   s.date = %q{2011-08-24}
-  s.description = %q{resque plugin for dynamically adding/removing workers to a queue}
+  s.description = %q{A resque plugin for automatically scaling workers}
   s.email = %q{nrfrausto@gmail.com}
   s.extra_rdoc_files = [
     "LICENSE.txt",
@@ -44,7 +44,7 @@ Gem::Specification.new do |s|
   s.licenses = [%q{MIT}]
   s.require_paths = [%q{lib}]
   s.rubygems_version = %q{1.8.8}
-  s.summary = %q{resque plugin for dynamically adding/removing workers to a queue}
+  s.summary = %q{A resque plugin for automatically scaling workers}
 
   if s.respond_to? :specification_version then
     s.specification_version = 3

@@ -20,8 +20,8 @@ Jeweler::Tasks.new do |gem|
   gem.name = "resque-director"
   gem.homepage = "http://github.com/frausto/resque-director"
   gem.license = "MIT"
-  gem.summary = %Q{resque plugin for dynamically adding/removing workers to a queue}
-  gem.description = %Q{resque plugin for dynamically adding/removing workers to a queue}
+  gem.summary = %Q{A resque plugin for automatically scaling workers}
+  gem.description = %Q{resque plugin for automatically scaling workers for a queue}
   gem.email = "nrfrausto@gmail.com"
   gem.authors = ["Nolan Frausto"]
   # dependencies defined in Gemfile
