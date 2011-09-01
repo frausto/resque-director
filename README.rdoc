@@ -95,7 +95,7 @@ To add director logging you can pass a logger as an option. It will prepend all 
 
 == Requirements
 
-* resque-director requires resque ~> 1.10.0. 
+* resque-director requires resque ~> 1.10. 
 * resque-director may be incompatible with gems that modify resque's push/pop functionality. 
 
 
