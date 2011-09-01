@@ -5,12 +5,12 @@
 
 Gem::Specification.new do |s|
   s.name = %q{resque-director}
-  s.version = "2.0.0"
+  s.version = "2.1.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = [%q{Nolan Frausto}]
-  s.date = %q{2011-08-24}
-  s.description = %q{A resque plugin for automatically scaling workers}
+  s.date = %q{2011-09-01}
+  s.description = %q{resque plugin for automatically scaling workers based on the amount of time it takes a job to go through the queue and/or the length of the queue }
   s.email = %q{nrfrausto@gmail.com}
   s.extra_rdoc_files = [
     "LICENSE.txt",
@@ -18,7 +18,6 @@ Gem::Specification.new do |s|
   ]
   s.files = [
     ".document",
-    ".rspec",
     "Gemfile",
     "LICENSE.txt",
     "README.rdoc",
@@ -27,13 +26,13 @@ Gem::Specification.new do |s|
     "lib/resque-director.rb",
     "lib/resque/plugins/director.rb",
     "lib/resque/plugins/director/config.rb",
-    "lib/resque/plugins/director/extra_hooks.rb",
+    "lib/resque/plugins/director/push_pop.rb",
     "lib/resque/plugins/director/scaler.rb",
     "lib/resque/plugins/director/worker_tracker.rb",
     "resque-director.gemspec",
     "spec/redis-test.conf",
     "spec/resque/plugins/director/config_spec.rb",
-    "spec/resque/plugins/director/extra_hooks_spec.rb",
+    "spec/resque/plugins/director/push_pop_spec.rb",
     "spec/resque/plugins/director/scaler_spec.rb",
     "spec/resque/plugins/director/worker_tracker_spec.rb",
     "spec/resque/plugins/director_spec.rb",
@@ -56,7 +55,7 @@ Gem::Specification.new do |s|
       s.add_development_dependency(%q<jeweler>, ["~> 1.6.4"])
       s.add_development_dependency(%q<rcov>, [">= 0"])
     else
-      s.add_dependency(%q<resque>, ["~> 1.14.0"])
+      s.add_dependency(%q<resque>, ["~> 1.10"])
       s.add_dependency(%q<rspec>, ["~> 2.3.0"])
       s.add_dependency(%q<bundler>, ["~> 1.0.0"])
       s.add_dependency(%q<jeweler>, ["~> 1.6.4"])
