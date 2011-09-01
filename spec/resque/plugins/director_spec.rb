@@ -20,6 +20,13 @@ describe Resque::Plugins::Director do
       Resque.enqueue(TestJob)
       Resque::Plugins::Director::Config.queue.should == "test"
     end
+    
+    it "should not scale if the no_enqueue_scale option is set" do
+      Resque::Worker.new(:test).register_worker
+      Resque::Plugins::Director::Scaler.should_not_receive(:scale_within_requirements)
+      TestJob.direct :no_enqueue_scale => true
+      Resque.enqueue(TestJob)
+    end
   end
   
   describe "#after_perform_direct_workers" do
@@ -170,6 +177,13 @@ describe Resque::Plugins::Director do
       it "should not scale if no configuration options are set" do
         Resque::Plugins::Director::Scaler.should_not_receive(:scale_up)
         Resque::Plugins::Director::Scaler.should_not_receive(:scale_down)
+        TestJob.after_pop_direct_workers
+      end
+      
+      it "should scale within requirements if no_enqueue_scale is set" do
+        TestJob.direct :max_queue => 10, :max_time => 30, :no_enqueue_scale => true
+        1.times { Resque.enqueue(TestJob) }
+        Resque::Plugins::Director::Scaler.should_receive(:scale_within_requirements)
         TestJob.after_pop_direct_workers
       end
     end

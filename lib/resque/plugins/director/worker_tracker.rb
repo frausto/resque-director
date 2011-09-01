@@ -47,12 +47,12 @@ module Resque
         
         def workers_to_start
           min_workers = Config.min_workers <= 0 ? 1 : Config.min_workers
-          workers_to_start = min_workers - @number_working
+          min_workers - @number_working
         end
         
         def workers_to_stop
           return 0 if Config.max_workers <= 0
-          workers_to_stop = Config.max_workers - @number_working
+          Config.max_workers - @number_working
         end
         
         def current_workers

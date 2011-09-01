@@ -7,10 +7,12 @@ module Resque
     
       def after_enqueue_scale_workers(*args)
         Config.queue = @queue.to_s
+        return if Config.no_enqueue_scale
         Scaler.scale_within_requirements
       end
     
       def after_pop_direct_workers(start_time=Time.now.utc)
+        Scaler.scale_within_requirements if Config.no_enqueue_scale
         return unless scaling_config_set?
         Config.queue = @queue.to_s
         
