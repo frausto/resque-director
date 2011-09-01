@@ -179,13 +179,20 @@ describe Resque::Plugins::Director do
         Resque::Plugins::Director::Scaler.should_not_receive(:scale_down)
         TestJob.after_pop_direct_workers
       end
-      
-      it "should scale within requirements if no_enqueue_scale is set" do
-        TestJob.direct :max_queue => 10, :max_time => 30, :no_enqueue_scale => true
-        1.times { Resque.enqueue(TestJob) }
-        Resque::Plugins::Director::Scaler.should_receive(:scale_within_requirements)
-        TestJob.after_pop_direct_workers
-      end
+    end
+  end
+  
+  describe "#before_perform_direct_workers" do
+    it "should scale within requirements if no_enqueue_scale is set" do
+      TestJob.direct :no_enqueue_scale => true
+      Resque::Plugins::Director::Scaler.should_receive(:scale_within_requirements)
+      TestJob.before_perform_direct_workers
+    end
+    
+    it "should not scale within requirements if no_enqueue_scale is not set" do
+      TestJob.direct :no_enqueue_scale => false
+      Resque::Plugins::Director::Scaler.should_not_receive(:scale_within_requirements)
+      TestJob.before_perform_direct_workers
     end
   end
 end
