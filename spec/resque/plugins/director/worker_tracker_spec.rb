@@ -115,6 +115,18 @@ describe Resque::Plugins::Director::WorkerTracker do
     end
   end
   
+  describe "#valid_worker_pids" do
+    it "should return only pids of workers on the same host" do
+      @worker.stub!(:hostname => "different_machine")
+      worker2 = Resque::Worker.new(:test)
+      pid = worker2.to_s.split(":")[1].to_i
+      Resque.should_receive(:workers).and_return [@worker, worker2]
+      tracker = Resque::Plugins::Director::WorkerTracker.new
+      
+      tracker.valid_worker_pids.should == [pid]
+    end
+  end
+  
   describe "#initialize" do
     it "sets the workers from the queue" do
       Resque.should_receive(:workers).and_return [@worker, @worker, @worker]

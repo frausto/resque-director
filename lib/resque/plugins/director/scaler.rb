@@ -22,7 +22,7 @@ module Resque
           
           def scale_down_to_minimum
             tracker = WorkerTracker.new
-            number_of_workers = tracker.total_to_go_to_minimum
+            number_of_workers = tracker.total_to_go_to_minimum 
             stop(tracker, number_of_workers)
           end
           
@@ -65,8 +65,7 @@ module Resque
             if Config.stop_override
               number_of_workers.times {Config.stop_override.call(Config.queue) }
             else
-              valid_workers = tracker.workers.select{|w| w.hostname == `hostname`.chomp}
-              worker_pids = valid_workers[0...number_of_workers].map(&:pid)
+              worker_pids = tracker.valid_worker_pids[0...number_of_workers]
               worker_pids.each do |pid| 
                 Process.kill("QUIT", pid) rescue nil
               end

@@ -1,6 +1,6 @@
 source "http://rubygems.org"
 
-gem 'resque', "~> 1.14.0"
+gem 'resque', "~> 1.10.0"
 
 group :development do
   gem "rspec", "~> 2.3.0"

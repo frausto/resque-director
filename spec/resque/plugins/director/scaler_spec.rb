@@ -92,7 +92,8 @@ describe Resque::Plugins::Director::Scaler do
     
     it "should scale down multiple workers" do
       Resque.should_receive(:workers).and_return [@worker, @worker, @worker]
-      Process.should_receive(:kill).with("QUIT", @worker.pid)
+      pid = @worker.to_s.split(":")[1].to_i
+      Process.should_receive(:kill).with("QUIT", pid)
       subject.scale_down(2)
     end
     
@@ -112,12 +113,12 @@ describe Resque::Plugins::Director::Scaler do
     
     it "should not scale down workers on different queues" do
       worker2 = Resque::Worker.new(:not_test)
-      @worker.stub(:pid => 1) 
-      worker2.stub(:pid => 2)
+      @worker.stub(:to_s => "host:1:test") 
+      worker2.stub(:to_s => "host:2:test")
       Resque.should_receive(:workers).and_return [worker2, @worker, @worker, worker2]
       
-      Process.should_not_receive(:kill).with("QUIT", worker2.pid)
-      Process.should_receive(:kill).with("QUIT", @worker.pid)
+      Process.should_not_receive(:kill).with("QUIT", 2)
+      Process.should_receive(:kill).with("QUIT", 1)
       subject.scale_down
     end
   end
@@ -125,6 +126,7 @@ describe Resque::Plugins::Director::Scaler do
   describe "#stop" do
     before do
       @worker = Resque::Worker.new(:test)
+      @pid = @worker.to_s.split(":")[1].to_i
       Resque::Plugins::Director::Config.setup :min_workers => 0
     end
     
@@ -132,7 +134,7 @@ describe Resque::Plugins::Director::Scaler do
       Resque.should_receive(:workers).and_return [@worker]
       tracker = Resque::Plugins::Director::WorkerTracker.new
       
-      Process.should_receive(:kill).with("QUIT", @worker.pid)
+      Process.should_receive(:kill).with("QUIT", @pid)
       subject.send(:stop, tracker, 1)
     end
     
@@ -153,7 +155,7 @@ describe Resque::Plugins::Director::Scaler do
       Resque.should_receive(:workers).and_return [@worker]
       tracker = Resque::Plugins::Director::WorkerTracker.new
       
-      Process.should_not_receive(:kill).with("QUIT", @worker.pid)
+      Process.should_not_receive(:kill).with("QUIT", @pid)
       subject.send(:stop, tracker, 1)
     end
     
@@ -162,17 +164,17 @@ describe Resque::Plugins::Director::Scaler do
       Resque.should_receive(:workers).and_return [@worker]
       tracker = Resque::Plugins::Director::WorkerTracker.new
       
-      Process.should_not_receive(:kill).with("QUIT", @worker.pid)
+      Process.should_not_receive(:kill).with("QUIT", @pid)
       subject.send(:stop, tracker, 1)
     end
     
     it "stops workers on the same host if possible" do
-      @worker.stub!(:hostname => "different_machine")
       worker2 = Resque::Worker.new(:test)
-      Resque.should_receive(:workers).and_return [@worker, worker2]
+      worker2.stub!(:hostname => "different_machine")
+      Resque.should_receive(:workers).and_return [worker2, @worker]
       tracker = Resque::Plugins::Director::WorkerTracker.new
       
-      Process.should_receive(:kill).with("QUIT", worker2.pid)
+      Process.should_receive(:kill).with("QUIT", @pid)
       subject.send(:stop, tracker, 1)
     end
     

@@ -38,6 +38,11 @@ module Resque
           number_to_stop > scale_limit ? scale_limit : number_to_stop
         end
         
+        def valid_worker_pids
+          valid_workers = @workers.select{|w| w.hostname == `hostname`.chomp}
+          valid_workers.map{|worker| worker.to_s.split(":")[1].to_i }
+        end
+        
         private
         
         def workers_to_start
@@ -52,7 +57,7 @@ module Resque
         
         def current_workers
           Resque.workers.select do |w|
-            w.queues == [Config.queue] && !w.shutdown?
+            w.queues.map(&:to_s) == [Config.queue.to_s] && !w.shutdown?
           end
         end
       end

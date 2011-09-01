@@ -25,11 +25,13 @@ module Resque
       end
     
       def after_perform_direct_workers(*args)
+        Config.queue = @queue.to_s
         jobs_in_queue = Resque.size(@queue.to_s)
         Scaler.scale_down_to_minimum if jobs_in_queue == 0
       end
     
       def on_failure_direct_workers(*args)
+        Config.queue = @queue.to_s
         jobs_in_queue = Resque.size(@queue.to_s)
         Scaler.scale_down_to_minimum if jobs_in_queue == 0
       end
