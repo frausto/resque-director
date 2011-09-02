@@ -48,6 +48,24 @@ describe Resque::Plugins::Director::Scaler do
       2.times { subject.scaling { @times_scaled += 1 } }
       @times_scaled.should == 2
     end
+    
+    describe "last_scaled_test" do
+      
+      before do
+        @now = Time.now
+        Time.stub(:now => @now)
+      end
+    
+      it "should set the last scaled time" do
+        subject.scaling { true }
+        Resque.redis.get("last_scaled_test").to_i.should == @now.utc.to_i
+      end
+    
+      it "should not set last scaled time if scaling block returns false" do
+        subject.scaling { false }
+        Resque.redis.get("last_scaled_test").should be_nil
+      end
+    end
   end
   
   describe "#scale_down_to_minimum" do

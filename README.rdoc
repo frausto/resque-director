@@ -41,9 +41,9 @@ For Example:
 
 === Start/Stop Options
 
-<b>start_override</b>:: This option takes a lambda closure that accepts the queue as an argument, the block you pass in will be responsible for starting a SINGLE worker allowing you to fully customize the starting of a worker. By default to start a worker the system command "QUEUE=queue_name rake resque:work &" is run, where queue_name is whatever queue the job is running.
+<b>start_override</b>:: This option takes a lambda closure that accepts the queue as an argument, the block you pass in will be responsible for starting a SINGLE worker allowing you to fully customize the starting of a worker. If your block returns false then that signifies that a worker was not started and the last scaled time will not be set. By default to start a worker the system command "QUEUE=queue_name rake resque:work &" is run, where queue_name is whatever queue the job is running.
 
-<b>stop_override</b>:: This option takes a lambda closure that accepts the queue as an argument, the block you pass in will be responsible for stopping a SINGLE worker allowing you to fully customize the stopping of a worker. By default a to stop a worker the worker process on that host is sent a QUIT signal.
+<b>stop_override</b>:: This option takes a lambda closure that accepts the queue as an argument, the block you pass in will be responsible for stopping a SINGLE worker allowing you to fully customize the stopping of a worker. If your block returns false then that signifies that a worker was not stopped and the last scaled time will not be set. By default a to stop a worker the worker process on that host is sent a QUIT signal.
 
 ===	Customized Starting/Stopping Workers Example
 

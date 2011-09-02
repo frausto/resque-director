@@ -38,8 +38,9 @@ module Resque
           
           def scaling(number_of_workers=1)
             return unless time_to_scale? && number_of_workers > 0
-            yield
-            Resque.redis.set("last_scaled_#{Config.queue}", Time.now.utc.to_i)
+            unless yield == false
+              Resque.redis.set("last_scaled_#{Config.queue}", Time.now.utc.to_i)
+            end
           end
         
           private

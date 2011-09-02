@@ -1,4 +1,5 @@
 Gemfile.lock
+json
 .rspec
 resque-director-0.1.0.gem
 
