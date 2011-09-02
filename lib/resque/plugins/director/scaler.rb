@@ -52,22 +52,28 @@ module Resque
           
           def start(number_of_workers)
             Config.log("starting #{number_of_workers} workers on queue:#{Config.queue}") if number_of_workers > 0
-            if Config.start_override
-              number_of_workers.times { Config.start_override.call(Config.queue) }
-            else
-              number_of_workers.times { system("QUEUE=#{[Config.queue].flatten.join(",")} rake resque:work &") }
-            end
+            return override(number_of_workers, Config.start_override) if Config.start_override
+            start_default(number_of_workers)
           end
           
           def stop(tracker, number_of_workers)
             Config.log("stopping #{number_of_workers} workers on queue:#{Config.queue}") if number_of_workers > 0
-            if Config.stop_override
-              number_of_workers.times {Config.stop_override.call(Config.queue) }
-            else
-              worker_pids = tracker.valid_worker_pids[0...number_of_workers]
-              worker_pids.each do |pid| 
-                Process.kill("QUIT", pid) rescue nil
-              end
+            return override(number_of_workers, Config.stop_override) if Config.stop_override
+            stop_default(tracker, number_of_workers)
+          end
+          
+          def override(number_of_workers, override_block)
+            number_of_workers.times {override_block.call(Config.queue) }
+          end
+          
+          def start_default(number_of_workers)
+            number_of_workers.times { system("QUEUE=#{[Config.queue].flatten.join(",")} rake resque:work &") }
+          end
+
+          def stop_default(tracker, number_of_workers)
+            worker_pids = tracker.valid_worker_pids[0...number_of_workers]
+            worker_pids.each do |pid| 
+              Process.kill("QUIT", pid) rescue nil
             end
           end
         end
