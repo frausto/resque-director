@@ -3,21 +3,23 @@ module Resque
     module Director
       def direct(options={})
         Config.setup(options)
+        Config.queue = options[:queue]
       end
     
       def after_enqueue_scale_workers(*args)
-        Config.queue = @queue.to_s
+        set_queue
         return if Config.no_enqueue_scale
         Scaler.scale_within_requirements
       end
       
       def before_perform_direct_workers(*args)
+        set_queue
         Scaler.scale_within_requirements if Config.no_enqueue_scale
       end
     
       def after_pop_direct_workers(start_time=Time.now.utc)
         return unless scaling_config_set?
-        Config.queue = @queue.to_s
+        set_queue
         
         time_through_queue = Time.now.utc - start_time
         jobs_in_queue = Resque.size(@queue.to_s)
@@ -30,18 +32,22 @@ module Resque
       end
     
       def after_perform_direct_workers(*args)
-        Config.queue = @queue.to_s
+        set_queue
         jobs_in_queue = Resque.size(@queue.to_s)
         Scaler.scale_down_to_minimum if jobs_in_queue == 0
       end
     
       def on_failure_direct_workers(*args)
-        Config.queue = @queue.to_s
+        set_queue
         jobs_in_queue = Resque.size(@queue.to_s)
         Scaler.scale_down_to_minimum if jobs_in_queue == 0
       end
     
       private
+      
+      def set_queue
+        Config.queue ||= @queue.to_s
+      end
     
       def scaling_config_set?
         Config.max_time > 0 || Config.max_queue > 0

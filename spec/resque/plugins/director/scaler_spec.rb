@@ -30,6 +30,12 @@ describe Resque::Plugins::Director::Scaler do
       test_block.should_receive(:call).with("test")
       subject.scale_up
     end
+    
+    it "scales up a worker to work on multiple queues" do
+      Resque::Plugins::Director::Config.queue = [:test, :test2]
+      subject.should_receive(:system).with("QUEUE=test,test2 rake resque:work &")
+      subject.scale_up
+    end
   end
   
   describe "#scaling" do
@@ -39,6 +45,13 @@ describe Resque::Plugins::Director::Scaler do
     
     it "should not scale workers if last time scaled is too soon" do
       Resque::Plugins::Director::Config.setup(:wait_time => 60)
+      2.times { subject.scaling { @times_scaled += 1 } }
+      @times_scaled.should == 1
+    end
+    
+    it "should not scale workers if last time scaled is too soon for watching multiple queues" do
+      Resque::Plugins::Director::Config.setup(:wait_time => 60)
+      Resque::Plugins::Director::Config.queue = [:test,:test2]
       2.times { subject.scaling { @times_scaled += 1 } }
       @times_scaled.should == 1
     end
@@ -54,6 +67,12 @@ describe Resque::Plugins::Director::Scaler do
       before do
         @now = Time.now
         Time.stub(:now => @now)
+      end
+      
+      it "should the last scaled for scaling multiple queue workers" do
+        Resque::Plugins::Director::Config.queue = [:test,:test2]
+        subject.scaling { true }
+        Resque.redis.get("last_scaled_testtest2").to_i.should == @now.utc.to_i
       end
     
       it "should set the last scaled time" do

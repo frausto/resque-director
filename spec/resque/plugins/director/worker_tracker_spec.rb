@@ -145,5 +145,18 @@ describe Resque::Plugins::Director::WorkerTracker do
       Resque.should_receive(:workers).and_return [shutdown_worker, @worker, @worker]
       subject.new.workers.should == [@worker, @worker]
     end
+    
+    it "does not set workers that have the queue included with others" do
+      other_worker = Resque::Worker.new(:other, :test)
+      Resque.should_receive(:workers).and_return [@worker, other_worker, @worker]
+      subject.new.workers.should == [@worker, @worker]
+    end
+    
+    it "finds workers working on multiple queues if specified" do
+      other_worker = Resque::Worker.new(:other, :test)
+      Resque::Plugins::Director::Config.queue = [:other,:test]
+      Resque.should_receive(:workers).and_return [@worker, other_worker]
+      subject.new.workers.should == [other_worker]
+    end
   end
 end

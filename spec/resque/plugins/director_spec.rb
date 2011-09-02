@@ -21,6 +21,12 @@ describe Resque::Plugins::Director do
       Resque::Plugins::Director::Config.queue.should == "test"
     end
     
+    it "should not set the queue if it was manually set" do
+      TestJob.direct :queue => "real_queue"
+      Resque.enqueue(TestJob)
+      Resque::Plugins::Director::Config.queue.should == "real_queue"
+    end
+    
     it "should not scale if the no_enqueue_scale option is set" do
       Resque::Worker.new(:test).register_worker
       Resque::Plugins::Director::Scaler.should_not_receive(:scale_within_requirements)
@@ -30,6 +36,17 @@ describe Resque::Plugins::Director do
   end
   
   describe "#after_perform_direct_workers" do
+    it "should set the queue" do
+      TestJob.after_perform_direct_workers
+      Resque::Plugins::Director::Config.queue.should == "test"
+    end
+    
+    it "should not set the queue if it is set" do
+      TestJob.direct :queue => "real_queue"
+      TestJob.after_perform_direct_workers
+      Resque::Plugins::Director::Config.queue.should == "real_queue"
+    end
+    
     it "should scale down to the minumum workers if there are no jobs in the queue" do
       Resque::Plugins::Director::Scaler.should_receive(:scale_down_to_minimum)
       TestJob.after_perform_direct_workers
@@ -43,6 +60,17 @@ describe Resque::Plugins::Director do
   end
   
   describe "#on_failure_direct_workers" do
+    it "should set the queue" do
+      TestJob.on_failure_direct_workers
+      Resque::Plugins::Director::Config.queue.should == "test"
+    end
+    
+    it "should not set the queue if it is set" do
+      TestJob.direct :queue => "real_queue"
+      TestJob.on_failure_direct_workers
+      Resque::Plugins::Director::Config.queue.should == "real_queue"
+    end
+    
     it "should scale down to the minumum workers if there are no jobs in the queue" do
       Resque::Plugins::Director::Scaler.should_receive(:scale_down_to_minimum)
       TestJob.on_failure_direct_workers
@@ -66,6 +94,12 @@ describe Resque::Plugins::Director do
         Resque::Plugins::Director::Config.queue = nil
         TestJob.after_pop_direct_workers(@start_time)
         Resque::Plugins::Director::Config.queue.should == "test"
+      end
+      
+      it "should not set the queue if it is set" do
+        TestJob.direct :max_time => 20, :queue => "real_queue"
+        TestJob.after_pop_direct_workers(@start_time)
+        Resque::Plugins::Director::Config.queue.should == "real_queue"
       end
     
       it "should not start workers if max_time is not set" do
@@ -183,6 +217,17 @@ describe Resque::Plugins::Director do
   end
   
   describe "#before_perform_direct_workers" do
+    it "should set the queue" do
+      TestJob.before_perform_direct_workers
+      Resque::Plugins::Director::Config.queue.should == "test"
+    end
+    
+    it "should not set the queue if it is set" do
+      TestJob.direct :queue => "real_queue"
+      TestJob.before_perform_direct_workers
+      Resque::Plugins::Director::Config.queue.should == "real_queue"
+    end
+    
     it "should scale within requirements if no_enqueue_scale is set" do
       TestJob.direct :no_enqueue_scale => true
       Resque::Plugins::Director::Scaler.should_receive(:scale_within_requirements)

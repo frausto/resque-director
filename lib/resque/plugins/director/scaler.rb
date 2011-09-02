@@ -14,7 +14,6 @@ module Resque
           def scale_down(number_of_workers=1)
             tracker = WorkerTracker.new
             number_of_workers = tracker.total_to_remove(number_of_workers)
-            
             scaling(number_of_workers) do
               stop(tracker, number_of_workers)
             end
@@ -28,7 +27,6 @@ module Resque
           
           def scale_within_requirements
             number_of_workers = WorkerTracker.new.total_for_requirements
-            
             if number_of_workers > 0
               scale_up(number_of_workers)
             elsif number_of_workers < 0
@@ -57,7 +55,7 @@ module Resque
             if Config.start_override
               number_of_workers.times { Config.start_override.call(Config.queue) }
             else
-              number_of_workers.times { system("QUEUE=#{Config.queue} rake resque:work &") }
+              number_of_workers.times { system("QUEUE=#{[Config.queue].flatten.join(",")} rake resque:work &") }
             end
           end
           
