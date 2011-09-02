@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{resque-director}
-  s.version = "2.1.0"
+  s.version = "2.1.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = [%q{Nolan Frausto}]
-  s.date = %q{2011-09-01}
+  s.date = %q{2011-09-02}
   s.description = %q{resque plugin for automatically scaling workers based on the amount of time it takes a job to go through the queue and/or the length of the queue }
   s.email = %q{nrfrausto@gmail.com}
   s.extra_rdoc_files = [
@@ -54,12 +54,16 @@ Gem::Specification.new do |s|
       s.add_development_dependency(%q<bundler>, ["~> 1.0.0"])
       s.add_development_dependency(%q<jeweler>, ["~> 1.6.4"])
       s.add_development_dependency(%q<rcov>, [">= 0"])
+      s.add_development_dependency(%q<yajl-ruby>, ["~> 0.8.2"])
+      s.add_development_dependency(%q<json>, ["~> 1.5.3"])
     else
       s.add_dependency(%q<resque>, ["~> 1.10"])
       s.add_dependency(%q<rspec>, ["~> 2.3.0"])
       s.add_dependency(%q<bundler>, ["~> 1.0.0"])
       s.add_dependency(%q<jeweler>, ["~> 1.6.4"])
       s.add_dependency(%q<rcov>, [">= 0"])
+      s.add_dependency(%q<yajl-ruby>, ["~> 0.8.2"])
+      s.add_dependency(%q<json>, ["~> 1.5.3"])
     end
   else
     s.add_dependency(%q<resque>, ["~> 1.10"])
@@ -67,6 +71,8 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<bundler>, ["~> 1.0.0"])
     s.add_dependency(%q<jeweler>, ["~> 1.6.4"])
     s.add_dependency(%q<rcov>, [">= 0"])
+    s.add_dependency(%q<yajl-ruby>, ["~> 0.8.2"])
+    s.add_dependency(%q<json>, ["~> 1.5.3"])
   end
 end
 
