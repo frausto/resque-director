@@ -35,9 +35,22 @@ For Example:
 
 <b>wait_time</b>:: the time in seconds that it will wait after adding or removing a worker before being allowed to add or remove workers again. The default is 60 seconds.
 
-=== Scale Options
+=== Conditions For Starting Workers
 
-<b>no_enqueue_scale</b>:: When a job is enqueued workers will be scaled within the max/min requirements you set, if there is not a single worker running then the minimum number of workers will be scaled up (one worker will be scaled up if the minimum is zero). The worker itself handles the rest of the scaling. If you do not want scaling on enqueue and want to have the workers perform all the scaling then you can set this option to true, however if you do this you must be responsible for making sure that at least one worker is running on the queue. The default is false.
+A worker will be started if the queue length is greater than <b>max_queue</b> or if the time it takes a job to go through the queue is greater than <b>max_time</b>. Also a worker will only be started if the time since the last scaling is greater than <b>wait_time</b>. Workers will not be started if there are already the <b>max_workers</b> number of workers. By default resque-director allows you to have zero jobs running, when a job is enqueued then workers will be scaled within the max/min requirements you set. If there is not a single worker running, then the minimum number of workers will be scaled up (one worker will be scaled up if the minimum is zero).
+
+=== Conditions For Removing Workers
+
+A worker will be removed if the jobs in the queue fall below half of the <b>max_queue</b>, and if the time it takes for a job to be pulled off of a queue falls below half of the <b>max_time</b>. Workers will be scaled down to the minimum if there are no jobs on the queue. Workers will not be stopped if there are only <b>min_workers</b> number of workers. Also a worker will only be stopped if the time since the last scaling is greater than <b>wait_time</b>.
+
+=== Special Cases
+
+* If a max_worker is less than min_worker then the default for max_worker will be used (there will be no maximum). 
+* If a min_workers is set to anything less than 1 then it will be treated as 0.
+
+== Advanced Options
+
+The above options are plenty to handle the basic scaling of workers. The options below allow the user much more control over the way in which workers are scaled, the information tracked, and the times when a worker is scaled.
 
 === Start/Stop Options
 
@@ -57,14 +70,6 @@ For Example:
     
     #rest of your Job class here
   end
-
-=== Conditions For Starting Workers
-
-A worker will be started if the queue length is greater than <b>max_queue</b> or if the time it takes a job to go through the queue is greater than <b>max_time</b>. Also a worker will only be started if the time since the last scaling is greater than <b>wait_time</b>. Workers will not be started if there are already the <b>max_workers</b> number of workers. When a job is enqueued and if <b>no_enqueue_scale</b> is not set or false, then workers will be scaled within the max/min requirements you set, if there is not a single worker running then the minimum number of workers will be scaled up (one worker will be scaled up if the minimum is zero).
-
-=== Conditions For Removing Workers
-
-A worker will be removed if the jobs in the queue fall below half of the <b>max_queue</b>, and if the time it takes for a job to be pulled off of a queue falls below half of the <b>max_time</b>. Workers will be scaled down to the minimum if there are no jobs on the queue.
 
 === Logging
 
@@ -88,10 +93,9 @@ To add director logging you can pass a logger as an option. It will prepend all 
 
 <b>log_level</b>:: This sets the level to log at as a symbol. The default level is :debug.
 
-=== Special Cases
+=== Scale Options
 
-* If a max_worker is less than min_worker then the default for max_worker will be used (there will be no maximum). 
-* If a min_workers is set to anything less than 1 then it will be treated as 0.
+<b>no_enqueue_scale</b>:: When a job is enqueued workers will be scaled within the max/min requirements you set, if there is not a single worker running then the minimum number of workers will be scaled up (one worker will be scaled up if the minimum is zero). The worker itself handles the rest of the scaling. If you do not want scaling on enqueue and want to have the workers perform all the scaling then you can set this option to true, however if you do this you must be responsible for making sure that at least one worker is running on the queue. The default is false.
 
 == Requirements
 
