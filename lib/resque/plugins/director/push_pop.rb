@@ -35,7 +35,3 @@ module Resque
     end
   end
 end
-
-module Resque
-  include Resque::Plugins::Director::PushPop
-end
