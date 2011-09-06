@@ -95,6 +95,10 @@ To add director logging you can pass a logger as an option. It will prepend all 
 
 <b>no_enqueue_scale</b>:: When a job is enqueued workers will be scaled within the max/min requirements you set, if there is not a single worker running then the minimum number of workers will be scaled up (one worker will be scaled up if the minimum is zero). The worker itself handles the rest of the scaling. If you do not want scaling on enqueue and want to have the workers perform all the scaling then you can set this option to true, however if you do this you must be responsible for making sure that at least one worker is running on the queue. The default is false.
 
+== Multiqueue
+
+resque-director will still look at the job's queue to determine when to scale. However if you set the <b>queue</b> option it will scale a worker working on that queue, or a worker working on multiple queues if you pass it an array of queues.
+
 === Multiqueue Options
 
 <b>queue</b>:: The queue name(s) that you will be scaling and using to calculate the number of workers working. The default is the queue name of the Job.
@@ -107,10 +111,6 @@ To add director logging you can pass a logger as an option. It will prepend all 
     
     #rest of your Job class here
   end
-
-== Multiqueue
-
-resque-director will still look at the job's queue to determine when to scale. However if you set the <b>queue</b> option it will scale a worker working on that queue, or a worker working on multiple queues if you pass it an array of queues. 
 
 == Requirements
 
