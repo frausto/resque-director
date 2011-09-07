@@ -57,7 +57,7 @@ module Resque
         
         def current_workers
           Resque.workers.select do |w|
-            w.queues.map(&:to_s) == Config.queue.map(&:to_s) && !w.shutdown?
+            w.queues.map(&:to_s) == [Config.queue].flatten.map(&:to_s) && !w.shutdown?
           end
         end
       end
