@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{resque-director}
-  s.version = "2.1.1"
+  s.version = "2.2.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = [%q{Nolan Frausto}]
-  s.date = %q{2011-09-02}
+  s.date = %q{2011-09-07}
   s.description = %q{resque plugin for automatically scaling workers based on the amount of time it takes a job to go through the queue and/or the length of the queue }
   s.email = %q{nrfrausto@gmail.com}
   s.extra_rdoc_files = [
