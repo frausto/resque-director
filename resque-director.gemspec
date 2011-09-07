@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{resque-director}
-  s.version = "2.2.0"
+  s.version = "2.2.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = [%q{Nolan Frausto}]
@@ -42,7 +42,7 @@ Gem::Specification.new do |s|
   s.homepage = %q{http://github.com/frausto/resque-director}
   s.licenses = [%q{MIT}]
   s.require_paths = [%q{lib}]
-  s.rubygems_version = %q{1.8.8}
+  s.rubygems_version = %q{1.8.6}
   s.summary = %q{A resque plugin for automatically scaling workers}
 
   if s.respond_to? :specification_version then
