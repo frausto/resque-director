@@ -108,7 +108,7 @@ To add director logging you can pass a logger as an option. It will prepend all 
     #rest of your Job class here
   end
 
-== Multiqueue
+=== Multiqueue
 
 resque-director will still look at the job's queue to determine when to scale. However if you set the <b>queue</b> option it will scale a worker working on that queue, or a worker working on multiple queues if you pass it an array of queues. 
 
