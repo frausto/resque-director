@@ -232,32 +232,61 @@ describe Resque::Plugins::Director::Scaler do
   describe "#scale_within_requirements" do
     it "should not scale up workers if the minumum number or greater are already running" do
       Resque::Worker.new(:test).register_worker
-      subject.should_not_receive(:scale_up)
+      subject.should_not_receive(:start)
+      subject.should_not_receive(:stop)
       subject.scale_within_requirements
     end
     
     it "should scale up the minimum number of workers if non are running" do
       Resque::Plugins::Director::Config.setup :min_workers => 2
-      subject.should_receive(:scale_up).with(2)
+      subject.should_receive(:start).with(2)
       subject.scale_within_requirements
+    end
+    
+    it "should scale workers ignoring the last scaled time" do
+      Resque::Plugins::Director::Config.setup :min_workers => 2, :wait_time => 60
+      subject.scaling { true }
+      subject.should_receive(:start).with(2)
+      subject.scale_within_requirements
+    end
+    
+    it "should set the last scaled time if scaling up" do
+      @now = Time.now
+      Time.stub(:now => @now)
+      Resque::Plugins::Director::Config.setup :min_workers => 1, :wait_time => 60
+      subject.should_receive(:start)
+      subject.scale_within_requirements
+      Resque.redis.get("last_scaled_test").to_i.should == @now.utc.to_i
+    end
+    
+    it "should set the last scaled time if scaling down" do
+      @now = Time.now
+      Time.stub(:now => @now)
+      Resque::Plugins::Director::Config.setup :max_workers => 1, :wait_time => 60
+      workers = 2.times.map { Resque::Worker.new(:test) }
+      Resque.should_receive(:workers).and_return(workers)
+      subject.should_receive(:stop)
+      
+      subject.scale_within_requirements
+      Resque.redis.get("last_scaled_test").to_i.should == @now.utc.to_i
     end
     
     it "should ensure at least one worker is running if min_workers is less than zero" do
       Resque::Plugins::Director::Config.setup :min_workers => -10
-      subject.should_receive(:scale_up).with(1)
+      subject.should_receive(:start).with(1)
       subject.scale_within_requirements
     end
     
     it "should ensure at least one worker is running if min_workers is zero" do
       Resque::Plugins::Director::Config.setup :min_workers => 0
-      subject.should_receive(:scale_up).with(1)
+      subject.should_receive(:start).with(1)
       subject.scale_within_requirements
     end
     
     it "should scale up the minimum number of workers if less than the minimum are running" do
       Resque::Plugins::Director::Config.setup :min_workers => 2
       Resque::Worker.new(:test).register_worker
-      subject.should_receive(:scale_up).with(1)
+      subject.should_receive(:start).with(1)
       subject.scale_within_requirements
     end
     
@@ -266,7 +295,7 @@ describe Resque::Plugins::Director::Scaler do
       workers = 2.times.map { Resque::Worker.new(:test) }
       Resque.should_receive(:workers).and_return(workers)
       
-      subject.should_receive(:scale_down).with(1)
+      subject.should_receive(:stop).with(anything, 1)
       subject.scale_within_requirements
     end
     
@@ -275,19 +304,19 @@ describe Resque::Plugins::Director::Scaler do
       workers = 1.times.map { Resque::Worker.new(:test) }
       Resque.should_receive(:workers).and_return(workers)
       
-      subject.should_not_receive(:scale_down)
+      subject.should_not_receive(:stop)
       subject.scale_within_requirements
     end
     
     it "should ignore workers from other queues" do
       Resque::Worker.new(:other).register_worker
-      subject.should_receive(:scale_up).with(1)
+      subject.should_receive(:start).with(1)
       subject.scale_within_requirements
     end
     
     it "should ignore workers on multiple queues" do
       Resque::Worker.new(:test, :other).register_worker
-      subject.should_receive(:scale_up).with(1)
+      subject.should_receive(:start).with(1)
       subject.scale_within_requirements
     end
   end

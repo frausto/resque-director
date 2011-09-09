@@ -26,22 +26,25 @@ module Resque
           end
           
           def scale_within_requirements
-            number_of_workers = WorkerTracker.new.total_for_requirements
+            tracker = WorkerTracker.new
+            number_of_workers = tracker.total_for_requirements
             if number_of_workers > 0
-              scale_up(number_of_workers)
+              set_last_scaled unless start(number_of_workers) == false
             elsif number_of_workers < 0
-              scale_down(number_of_workers * -1)
+              set_last_scaled unless stop(tracker, number_of_workers * -1) == false
             end
           end
           
           def scaling(number_of_workers=1)
             return unless time_to_scale? && number_of_workers > 0
-            unless yield == false
-              Resque.redis.set("last_scaled_#{[Config.queue].flatten.join('')}", Time.now.utc.to_i)
-            end
+            set_last_scaled unless yield == false
           end
         
           private
+          
+          def set_last_scaled
+            Resque.redis.set("last_scaled_#{[Config.queue].flatten.join('')}", Time.now.utc.to_i)
+          end
          
           def time_to_scale?
             last_time = Resque.redis.get("last_scaled_#{[Config.queue].flatten.join('')}")
