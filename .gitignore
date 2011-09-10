@@ -3,6 +3,8 @@ json
 .rspec
 resque-director-0.1.0.gem
 .rvmrc
+.document
+VERSION
 
 # rcov generated
 coverage
