@@ -4,7 +4,7 @@ Resque Director is a plugin for the Resque queueing system (http://github.com/de
 
 ==About
 
-resque-director is mainly useful for when you are managing a large number of workers and don't want to waste resources keeping all of them waiting when they are not being used. Also for jobs that are high priority or time sensitive you can have it autoscale workers when the time it took for the job to go through the queue is too long. For this reason resque director is useful in queues where the influx of jobs can change dramatically from time to time: enabling more workers during the times when the queue is filling up more quickly, and less in the opposite scenario. Different queues can be given different directions as well.
+Resque-director is useful for when you are managing a large number of workers and don't want to waste resources keeping all of them waiting when they are not being used. For jobs that are high priority or time sensitive you can have it autoscale workers based on how long it takes to go through the queue, or how big the queue becomes. In queues where the influx of jobs can change dramatically from time to time, resque director automatically scales more workers during the times when the queue is filling up more quickly, and less in the opposite scenario. Different queues can be given different directions as well.
 
 == Usage
 
@@ -27,7 +27,7 @@ For Example:
 
 <b>max_workers</b>:: specifies the maximum number of workers running at any point in time. It will never start more than the maximum number of workers. If anything less than or equal to zero is specified as the maximum it will be treated as if there is no maximum, and theoretically an infinite number of workers could be started. The default is 0.
 
-<b>max_time</b>:: the maximum time in seconds that a job takes to get pulled off the queue, if a job takes longer than this time then a worker is started. If anything less than or equal to zero is specified as the maximum time, this field will be ignored. The default is 0.
+<b>max_time</b>:: the maximum time in seconds that a job takes to go through the queue, if it takes longer than this time then a worker is started. If anything less than or equal to zero is specified as the maximum time, this field will be ignored. The default is 0.
 
 <b>max_queue</b>:: the maximum jobs that can build up in a queue, if more than this number of jobs build up then a worker is started. If anything less than or equal to zero is specified as the maximum queue, this field will be ignored. The default is 0.
 
@@ -35,7 +35,7 @@ For Example:
 
 === Conditions For Starting Workers
 
-A worker will be started if the queue length is greater than <b>max_queue</b> or if the time it takes a job to go through the queue is greater than <b>max_time</b>. Also a worker will only be started if the time since the last scaling is greater than <b>wait_time</b>. Workers will not be started if there are already the <b>max_workers</b> number of workers. By default resque-director allows you to have zero jobs running, when a job is enqueued then workers will be scaled within the max/min requirements you set. If there is not a single worker running, then the minimum number of workers will be scaled up (one worker will be scaled up if the minimum is zero).
+A worker will be started if the queue length is greater than <b>max_queue</b> or if the time it takes a job to go through the queue is greater than <b>max_time</b>. Also a worker will only be started if the time since the last scaling is greater than <b>wait_time</b>. Workers will not be started if there are already the <b>max_workers</b> number of workers. By default resque-director allows you to have zero workers running, when a job is enqueued then workers will be scaled within the max/min requirements you set. If there is not a single worker running, then the minimum number of workers will be scaled up (one worker will be scaled up if the minimum is zero).
 
 === Conditions For Removing Workers
 
@@ -52,7 +52,7 @@ The above options are plenty to handle the basic scaling of workers. The options
 
 === Start/Stop Options
 
-<b>start_override</b>:: You can set this option if you want to override the way to start a worker. This option takes a lambda closure that accepts the queue as an argument, the block you pass in will be responsible for starting a <em>SINGLE</em> worker allowing you to fully customize the starting of a worker. If your block returns false then that signifies that a worker was not started and the last scaled time will not be set. The default way a worker is started is with the system command: <tt>QUEUE=queue_name rake resque:work &</tt> where "queue_name" is the queue on which the job is running.
+<b>start_override</b>:: You can set this option if you want to override the way to start a worker. This option takes a lambda closure that accepts the queue as an argument, the block you pass in will be responsible for starting a <em>SINGLE</em> worker allowing you to fully customize the starting of a worker. If your block returns false then that signifies that a worker was not started and the last scaled time will not be set. The default way a worker is started is with the system command: "<tt>QUEUE=queue_name rake resque:work &</tt>" where "queue_name" is the queue on which the job is running.
 
 <b>stop_override</b>:: You can set this option if you want to override the way to stop a worker. This option takes a lambda closure that accepts the queue as an argument, the block you pass in will be responsible for stopping a <em>SINGLE</em> worker allowing you to fully customize the stopping of a worker. If your block returns false then that signifies that a worker was not stopped and the last scaled time will not be set. The default way a worker is stopped is that a QUIT signal is sent to a worker process. 
 
