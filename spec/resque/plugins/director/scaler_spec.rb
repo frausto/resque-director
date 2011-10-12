@@ -94,13 +94,13 @@ describe Resque::Plugins::Director::Scaler do
     end
     
     it "should scale workers down to the minimum" do
-      Resque.should_receive(:workers).and_return [@worker, @worker, @worker]
+      Resque.should_receive(:workers).any_number_of_times.and_return [@worker, @worker, @worker]
       Process.should_receive(:kill).twice
       subject.scale_down_to_minimum
     end
     
     it "should not scale if the workers are already at the minimum" do
-      Resque.should_receive(:workers).and_return [@worker]
+      Resque.should_receive(:workers).any_number_of_times.and_return [@worker]
       Process.should_not_receive(:kill)
       subject.scale_down_to_minimum
     end
@@ -108,7 +108,7 @@ describe Resque::Plugins::Director::Scaler do
     it "forces scaling by ignoring wait_time" do
       Resque::Plugins::Director::Config.setup(:wait_time => 60, :min_workers => 2)
       subject.scaling {}
-      Resque.should_receive(:workers).and_return [@worker, @worker, @worker]
+      Resque.should_receive(:workers).any_number_of_times.and_return [@worker, @worker, @worker]
       Process.should_receive(:kill)
       subject.scale_down_to_minimum
     end
@@ -121,14 +121,14 @@ describe Resque::Plugins::Director::Scaler do
     end
     
     it "should scale down a single worker by default" do
-      Resque.should_receive(:workers).and_return [@worker, @worker]
+      Resque.should_receive(:workers).any_number_of_times.and_return [@worker, @worker]
       
       Process.should_receive(:kill).once
       subject.scale_down
     end
     
     it "should scale down multiple workers" do
-      Resque.should_receive(:workers).and_return [@worker, @worker, @worker]
+      Resque.should_receive(:workers).any_number_of_times.and_return [@worker, @worker, @worker]
       pid = @worker.to_s.split(":")[1].to_i
       Process.should_receive(:kill).with("QUIT", pid)
       subject.scale_down(2)
@@ -137,13 +137,13 @@ describe Resque::Plugins::Director::Scaler do
     it "should not scale down more than the minimum allowed workers" do
       Resque::Plugins::Director::Config.setup :min_workers => 1
       
-      Resque.should_receive(:workers).and_return [@worker, @worker]
+      Resque.should_receive(:workers).any_number_of_times.and_return [@worker, @worker]
       Process.should_receive(:kill).once
       subject.scale_down(2)
     end
     
     it "should not throw exceptions when process throws exception" do
-      Resque.should_receive(:workers).and_return [@worker, @worker]
+      Resque.should_receive(:workers).any_number_of_times.and_return [@worker, @worker]
       Process.should_receive(:kill).and_throw(:Exception)
       lambda { subject.scale_down }.should_not raise_error
     end
@@ -152,7 +152,7 @@ describe Resque::Plugins::Director::Scaler do
       worker2 = Resque::Worker.new(:not_test)
       @worker.stub(:to_s => "host:1:test") 
       worker2.stub(:to_s => "host:2:test")
-      Resque.should_receive(:workers).and_return [worker2, @worker, @worker, worker2]
+      Resque.should_receive(:workers).any_number_of_times.and_return [worker2, @worker, @worker, worker2]
       
       Process.should_not_receive(:kill).with("QUIT", 2)
       Process.should_receive(:kill).with("QUIT", 1)
@@ -168,51 +168,46 @@ describe Resque::Plugins::Director::Scaler do
     end
     
     it "should kill worker by sending the QUIT signal to the workers pid" do
-      Resque.should_receive(:workers).and_return [@worker]
-      tracker = Resque::Plugins::Director::WorkerTracker.new
+      Resque.should_receive(:workers).any_number_of_times.and_return [@worker]
       
       Process.should_receive(:kill).with("QUIT", @pid)
-      subject.send(:stop, tracker, 1)
+      subject.send(:stop, 1)
     end
     
     it "should use the stop block to stop a worker if set" do
       test_block = lambda {|queue| }
       Resque::Plugins::Director::Config.setup :stop_override => test_block, :min_workers => 0
       
-      Resque.should_receive(:workers).and_return [@worker]
-      tracker = Resque::Plugins::Director::WorkerTracker.new
+      Resque.should_receive(:workers).any_number_of_times.and_return [@worker]
       
       test_block.should_receive(:call).with("test")
       Process.should_not_receive(:kill)
-      subject.send(:stop, tracker, 1)
+      subject.send(:stop, 1)
     end
     
     it "does not stop workers already set to be shutdown" do
       @worker.should_receive(:shutdown?).and_return(true)
-      Resque.should_receive(:workers).and_return [@worker]
-      tracker = Resque::Plugins::Director::WorkerTracker.new
+      Resque.should_receive(:workers).any_number_of_times.and_return [@worker]
       
       Process.should_not_receive(:kill).with("QUIT", @pid)
-      subject.send(:stop, tracker, 1)
+      subject.send(:stop, 1)
     end
     
     it "does not kill worker processes on different machines" do
       @worker.stub!(:hostname => "different_machine")
-      Resque.should_receive(:workers).and_return [@worker]
-      tracker = Resque::Plugins::Director::WorkerTracker.new
+      Resque.should_receive(:workers).any_number_of_times.and_return [@worker]
       
       Process.should_not_receive(:kill).with("QUIT", @pid)
-      subject.send(:stop, tracker, 1)
+      subject.send(:stop, 1)
     end
     
     it "stops workers on the same host if possible" do
       worker2 = Resque::Worker.new(:test)
       worker2.stub!(:hostname => "different_machine")
-      Resque.should_receive(:workers).and_return [worker2, @worker]
-      tracker = Resque::Plugins::Director::WorkerTracker.new
+      Resque.should_receive(:workers).any_number_of_times.and_return [worker2, @worker]
       
       Process.should_receive(:kill).with("QUIT", @pid)
-      subject.send(:stop, tracker, 1)
+      subject.send(:stop, 1)
     end
     
     it "ignores hostname if using custom stop script" do
@@ -220,12 +215,11 @@ describe Resque::Plugins::Director::Scaler do
       Resque::Plugins::Director::Config.setup :stop_override => test_block, :min_workers => 0
       
       @worker.stub!(:hostname => "different_machine")
-      Resque.should_receive(:workers).and_return [@worker]
-      tracker = Resque::Plugins::Director::WorkerTracker.new
+      Resque.should_receive(:workers).any_number_of_times.and_return [@worker]
       
       test_block.should_receive(:call).with("test")
       Process.should_not_receive(:kill)
-      subject.send(:stop, tracker, 1)
+      subject.send(:stop, 1)
     end
   end
   
@@ -264,7 +258,7 @@ describe Resque::Plugins::Director::Scaler do
       Time.stub(:now => @now)
       Resque::Plugins::Director::Config.setup :max_workers => 1, :wait_time => 60
       workers = 2.times.map { Resque::Worker.new(:test) }
-      Resque.should_receive(:workers).and_return(workers)
+      Resque.should_receive(:workers).any_number_of_times.and_return(workers)
       subject.should_receive(:stop)
       
       subject.scale_within_requirements
@@ -293,16 +287,16 @@ describe Resque::Plugins::Director::Scaler do
     it "should scale down the max number of workers if more than max" do
       Resque::Plugins::Director::Config.setup :max_workers => 1
       workers = 2.times.map { Resque::Worker.new(:test) }
-      Resque.should_receive(:workers).and_return(workers)
+      Resque.should_receive(:workers).any_number_of_times.and_return(workers)
       
-      subject.should_receive(:stop).with(anything, 1)
+      subject.should_receive(:stop).with(1)
       subject.scale_within_requirements
     end
     
     it "should not scale down if max_workers is zero" do
       Resque::Plugins::Director::Config.setup :max_workers => 0
       workers = 1.times.map { Resque::Worker.new(:test) }
-      Resque.should_receive(:workers).and_return(workers)
+      Resque.should_receive(:workers).any_number_of_times.and_return(workers)
       
       subject.should_not_receive(:stop)
       subject.scale_within_requirements
