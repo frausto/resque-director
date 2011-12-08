@@ -1,6 +1,18 @@
 module Resque
   module Plugins
     module Director
+      include Resque::Plugins::Remora
+      
+      def attach_remora
+        {:created_at => Time.now.utc.to_i}
+      end
+
+      def process_remora(queue, job)
+        timestamp = job['created_at']
+        start_time = timestamp.nil? ? Time.now.utc : Time.at(timestamp.to_i).utc
+        after_pop_direct_workers(start_time)
+      end
+        
       def direct(options={})
         Config.setup(options)
         Config.queue = options[:queue]
