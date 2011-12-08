@@ -1,3 +1,7 @@
+## 2.2.3 (2011-09-09)
+
+* Bugfix: remove race condition where it would not have the most up to date list of workers
+
 ## 2.2.2 (2011-09-09)
 
 * Bugfix: ignore wait_time when scaling to be within limits
